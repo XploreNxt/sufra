@@ -20,3 +20,72 @@ export interface Profile {
   role: UserRole;
   created_at: string;
 }
+
+export interface Restaurant {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  description: string | null;
+  cuisine_types: string[];
+  logo_url: string | null;
+  cover_url: string | null;
+  address_text: string | null;
+  lat: number | null;
+  lng: number | null;
+  phone: string | null;
+  commission_rate: number;
+  min_order: number;
+  delivery_fee: number;
+  default_prep_minutes: number;
+  status: "pending" | "active" | "suspended";
+  is_open: boolean;
+  rating_avg: number | null;
+  created_at: string;
+}
+
+export interface Modifier {
+  id: string;
+  group_id: string;
+  name: string;
+  price_delta: number;
+}
+
+export interface ModifierGroup {
+  id: string;
+  menu_item_id: string;
+  name: string;
+  min_select: number;
+  max_select: number;
+  is_required: boolean;
+  modifiers: Modifier[];
+}
+
+export interface MenuItem {
+  id: string;
+  restaurant_id: string;
+  category_id: string | null;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  is_available: boolean;
+  sort_order: number;
+  modifier_groups: ModifierGroup[];
+}
+
+export interface MenuCategory {
+  id: string;
+  restaurant_id: string;
+  name: string;
+  sort_order: number;
+  menu_items: MenuItem[];
+}
+
+export type RestaurantWithMenu = Restaurant & {
+  menu_categories: MenuCategory[];
+};
+
+/** "Rs 1,400" — prices come back from Postgres numeric as strings. */
+export function formatPrice(value: number | string): string {
+  return `Rs ${Number(value).toLocaleString("en-PK")}`;
+}
