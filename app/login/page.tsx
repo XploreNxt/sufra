@@ -18,17 +18,53 @@ function normalizePkPhone(input: string): string {
   return `+92${digits}`;
 }
 
+type Mode = "email" | "phone";
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
 
+  const [mode, setMode] = useState<Mode>("email");
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phoneInput, setPhoneInput] = useState("");
   const [phone, setPhone] = useState("");
   const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  async function redirectByRole(userId: string) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .single();
+    const role = (profile?.role ?? "customer") as UserRole;
+
+    const next = searchParams.get("next");
+    router.replace(next ?? homePathForRole(role));
+    router.refresh();
+  }
+
+  async function signInWithEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error || !data.user) {
+      setLoading(false);
+      setError(error?.message ?? "Sign-in failed. Try again.");
+      return;
+    }
+    await redirectByRole(data.user.id);
+  }
 
   async function sendOtp(e: React.FormEvent) {
     e.preventDefault();
@@ -63,31 +99,84 @@ function LoginForm() {
       setError(error?.message ?? "Verification failed. Try again.");
       return;
     }
-
-    // Profile row is created by the on_auth_user_created trigger.
-    const { data: profile } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
-    const role = (profile?.role ?? "customer") as UserRole;
-
-    const next = searchParams.get("next");
-    router.replace(next ?? homePathForRole(role));
-    router.refresh();
+    await redirectByRole(data.user.id);
   }
+
+  const inputClass =
+    "mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
+  const buttonClass =
+    "w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-neutral-50 p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-neutral-200">
         <h1 className="text-2xl font-bold text-neutral-900">Sign in</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          {step === "phone"
-            ? "Enter your mobile number to receive a one-time code."
-            : `We sent a code to ${phone}.`}
-        </p>
 
-        {step === "phone" ? (
+        <div className="mt-4 flex rounded-lg bg-neutral-100 p-1 text-sm font-medium">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("email");
+              setError(null);
+            }}
+            className={`flex-1 rounded-md px-3 py-1.5 transition ${
+              mode === "email"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-500"
+            }`}
+          >
+            Email
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("phone");
+              setError(null);
+            }}
+            className={`flex-1 rounded-md px-3 py-1.5 transition ${
+              mode === "phone"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-500"
+            }`}
+          >
+            Phone (OTP)
+          </button>
+        </div>
+
+        {mode === "email" ? (
+          <form onSubmit={signInWithEmail} className="mt-6 space-y-4">
+            <label className="block">
+              <span className="text-sm font-medium text-neutral-700">
+                Email
+              </span>
+              <input
+                type="email"
+                required
+                autoFocus
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-neutral-700">
+                Password
+              </span>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+            <button type="submit" disabled={loading} className={buttonClass}>
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+        ) : step === "phone" ? (
           <form onSubmit={sendOtp} className="mt-6 space-y-4">
             <label className="block">
               <span className="text-sm font-medium text-neutral-700">
@@ -101,19 +190,16 @@ function LoginForm() {
                 placeholder="03XX XXXXXXX"
                 value={phoneInput}
                 onChange={(e) => setPhoneInput(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className={inputClass}
               />
             </label>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading} className={buttonClass}>
               {loading ? "Sending…" : "Send code"}
             </button>
           </form>
         ) : (
           <form onSubmit={verifyOtp} className="mt-6 space-y-4">
+            <p className="text-sm text-neutral-500">We sent a code to {phone}.</p>
             <label className="block">
               <span className="text-sm font-medium text-neutral-700">
                 6-digit code
@@ -128,14 +214,10 @@ function LoginForm() {
                 placeholder="123456"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-center text-lg tracking-[0.4em] text-neutral-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className={`${inputClass} text-center text-lg tracking-[0.4em]`}
               />
             </label>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading} className={buttonClass}>
               {loading ? "Verifying…" : "Verify & sign in"}
             </button>
             <button
