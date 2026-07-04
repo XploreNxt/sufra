@@ -5,7 +5,8 @@ import {
 } from "@/lib/db/rider";
 import { ActiveDeliveryCard } from "@/components/rider/active-delivery";
 import { AvailableOrdersList } from "@/components/rider/available-orders";
-import { AutoRefresh } from "@/components/vendor/auto-refresh";
+import { LocationTracker } from "@/components/rider/location-tracker";
+import { RealtimeRefresh } from "@/components/realtime-refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,11 @@ export default async function RiderHomePage() {
   if (active) {
     return (
       <main>
-        <AutoRefresh seconds={20} />
+        <RealtimeRefresh
+          channel={`rider-active-${active.order_id}`}
+          tables={[{ table: "orders", filter: `id=eq.${active.order_id}` }]}
+        />
+        <LocationTracker />
         <h1 className="text-xl font-bold text-neutral-900">Current delivery</h1>
         <div className="mt-4">
           <ActiveDeliveryCard delivery={active} />
@@ -42,7 +47,11 @@ export default async function RiderHomePage() {
 
   return (
     <main>
-      <AutoRefresh seconds={15} />
+      <RealtimeRefresh
+        channel="rider-pool"
+        tables={[{ table: "orders" }]}
+        fallbackSeconds={45}
+      />
       <h1 className="text-xl font-bold text-neutral-900">
         Available deliveries
         {available.length > 0 && (

@@ -1,6 +1,6 @@
 import { getActiveRestaurant, getVendorOrders } from "@/lib/db/vendor";
 import { VendorOrderCard } from "@/components/vendor/order-card";
-import { AutoRefresh } from "@/components/vendor/auto-refresh";
+import { RealtimeRefresh } from "@/components/realtime-refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +53,12 @@ export default async function VendorOrdersPage() {
 
   return (
     <main>
-      <AutoRefresh seconds={15} />
+      <RealtimeRefresh
+        channel={`vendor-orders-${restaurant.id}`}
+        tables={[
+          { table: "orders", filter: `restaurant_id=eq.${restaurant.id}` },
+        ]}
+      />
       <Section
         title="New orders"
         list={incoming}

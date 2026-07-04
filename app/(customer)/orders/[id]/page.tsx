@@ -4,6 +4,10 @@ import { getSessionProfile } from "@/lib/auth/session";
 import { getOrder } from "@/lib/db/orders";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 import { formatPrice } from "@/types";
+import { RealtimeRefresh } from "@/components/realtime-refresh";
+import { TrackOrderMap } from "@/components/customer/track-order";
+
+const TRACKABLE = ["assigned", "picked_up", "on_the_way"];
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +25,11 @@ export default async function OrderDetailPage({
 
   return (
     <main className="mx-auto max-w-2xl">
+      <RealtimeRefresh
+        channel={`order-${order.id}`}
+        tables={[{ table: "orders", filter: `id=eq.${order.id}` }]}
+        fallbackSeconds={45}
+      />
       <Link
         href="/orders"
         className="text-sm font-medium text-emerald-700 hover:underline"
@@ -51,9 +60,24 @@ export default async function OrderDetailPage({
 
         {order.status === "pending" && (
           <p className="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Your order has been sent to the restaurant. You&apos;ll see the
-            status change once they accept it.
+            Your order has been sent to the restaurant. This page updates
+            live — no need to refresh.
           </p>
+        )}
+
+        {TRACKABLE.includes(order.status) && order.riders && (
+          <div className="mt-4">
+            <h2 className="font-semibold text-neutral-900">
+              Track your rider
+            </h2>
+            <TrackOrderMap
+              riderId={order.riders.id}
+              initialLat={order.riders.current_lat}
+              initialLng={order.riders.current_lng}
+              dropLat={order.addresses?.lat ?? null}
+              dropLng={order.addresses?.lng ?? null}
+            />
+          </div>
         )}
 
         <h2 className="mt-6 font-semibold text-neutral-900">Items</h2>

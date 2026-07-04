@@ -29,6 +29,13 @@ export interface OrderDetail extends OrderSummary {
     label: string | null;
     address_text: string | null;
     landmark: string | null;
+    lat: number | null;
+    lng: number | null;
+  } | null;
+  riders: {
+    id: string;
+    current_lat: number | null;
+    current_lng: number | null;
   } | null;
 }
 
@@ -51,7 +58,8 @@ export async function getOrder(id: string): Promise<OrderDetail | null> {
     .select(
       `id, status, total, subtotal, delivery_fee, payment_method, placed_at,
        restaurants(name),
-       addresses(label, address_text, landmark),
+       addresses(label, address_text, landmark, lat, lng),
+       riders(id, current_lat, current_lng),
        order_items(id, name_snapshot, price_snapshot, quantity, special_instructions,
          order_item_modifiers(id, name_snapshot, price_snapshot))`
     )
