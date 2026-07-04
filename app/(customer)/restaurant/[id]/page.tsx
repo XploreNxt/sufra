@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getRestaurantWithMenu } from "@/lib/db/restaurants";
+import {
+  getRestaurantReviews,
+  getRestaurantWithMenu,
+} from "@/lib/db/restaurants";
 import { formatPrice } from "@/types";
 import { RestaurantMenu } from "@/components/restaurant-menu";
 
@@ -14,6 +17,7 @@ export default async function RestaurantPage({
   const { id } = await params;
   const restaurant = await getRestaurantWithMenu(id).catch(() => null);
   if (!restaurant || restaurant.status !== "active") notFound();
+  const reviews = await getRestaurantReviews(id).catch(() => []);
 
   return (
     <main className="pb-24">
@@ -60,6 +64,39 @@ export default async function RestaurantPage({
       </div>
 
       <RestaurantMenu restaurant={restaurant} />
+
+      {reviews.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-lg font-bold text-neutral-900">
+            What customers say
+          </h2>
+          <div className="mt-3 space-y-3">
+            {reviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-neutral-200"
+              >
+                <p className="text-amber-500">
+                  {"★".repeat(rev.restaurant_rating ?? 0)}
+                  <span className="text-neutral-200">
+                    {"★".repeat(5 - (rev.restaurant_rating ?? 0))}
+                  </span>
+                  <span className="ml-2 text-xs text-neutral-400">
+                    {new Date(rev.created_at).toLocaleDateString("en-PK", {
+                      dateStyle: "medium",
+                    })}
+                  </span>
+                </p>
+                {rev.comment && (
+                  <p className="mt-1 text-sm text-neutral-600">
+                    “{rev.comment}”
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

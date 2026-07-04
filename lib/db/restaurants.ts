@@ -1,6 +1,27 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Restaurant, RestaurantWithMenu } from "@/types";
 
+export interface RestaurantReview {
+  id: string;
+  restaurant_rating: number | null;
+  comment: string | null;
+  created_at: string;
+}
+
+export async function getRestaurantReviews(
+  restaurantId: string
+): Promise<RestaurantReview[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id, restaurant_rating, comment, created_at")
+    .eq("restaurant_id", restaurantId)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  if (error) throw error;
+  return (data ?? []) as RestaurantReview[];
+}
+
 /** Active restaurants for the home feed (RLS also hides non-active ones). */
 export async function getActiveRestaurants(): Promise<Restaurant[]> {
   const supabase = await createClient();

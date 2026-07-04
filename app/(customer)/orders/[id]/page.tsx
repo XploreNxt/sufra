@@ -6,6 +6,7 @@ import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 import { formatPrice } from "@/types";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { TrackOrderMap } from "@/components/customer/track-order";
+import { ReviewForm } from "@/components/customer/review-form";
 
 const TRACKABLE = ["assigned", "picked_up", "on_the_way"];
 
@@ -120,6 +121,12 @@ export default async function OrderDetailPage({
             <dt>Subtotal</dt>
             <dd>{formatPrice(order.subtotal)}</dd>
           </div>
+          {Number(order.discount) > 0 && (
+            <div className="flex justify-between text-emerald-700">
+              <dt>Voucher discount</dt>
+              <dd>−{formatPrice(order.discount)}</dd>
+            </div>
+          )}
           <div className="flex justify-between text-neutral-600">
             <dt>Delivery fee</dt>
             <dd>{formatPrice(order.delivery_fee)}</dd>
@@ -146,6 +153,31 @@ export default async function OrderDetailPage({
             </p>
           </>
         )}
+
+        {order.status === "delivered" &&
+          (order.reviews ? (
+            <div className="mt-6 rounded-xl bg-neutral-50 p-4">
+              <h2 className="font-semibold text-neutral-900">Your review</h2>
+              <p className="mt-1 text-sm text-amber-500">
+                {"★".repeat(order.reviews.restaurant_rating ?? 0)}
+                <span className="text-neutral-300">
+                  {"★".repeat(5 - (order.reviews.restaurant_rating ?? 0))}
+                </span>
+                {order.reviews.rider_rating != null && (
+                  <span className="ml-3 text-neutral-500">
+                    Rider: {order.reviews.rider_rating}/5
+                  </span>
+                )}
+              </p>
+              {order.reviews.comment && (
+                <p className="mt-1 text-sm text-neutral-600">
+                  “{order.reviews.comment}”
+                </p>
+              )}
+            </div>
+          ) : (
+            <ReviewForm orderId={order.id} hasRider={order.rider_id != null} />
+          ))}
       </div>
     </main>
   );

@@ -12,7 +12,15 @@ export interface OrderSummary {
 export interface OrderDetail extends OrderSummary {
   subtotal: number;
   delivery_fee: number;
+  discount: number;
   payment_method: string;
+  rider_id: string | null;
+  reviews: {
+    id: string;
+    restaurant_rating: number | null;
+    rider_rating: number | null;
+    comment: string | null;
+  } | null;
   order_items: Array<{
     id: string;
     name_snapshot: string;
@@ -56,10 +64,12 @@ export async function getOrder(id: string): Promise<OrderDetail | null> {
   const { data, error } = await supabase
     .from("orders")
     .select(
-      `id, status, total, subtotal, delivery_fee, payment_method, placed_at,
+      `id, status, total, subtotal, delivery_fee, discount, payment_method,
+       placed_at, rider_id,
        restaurants(name),
        addresses(label, address_text, landmark, lat, lng),
        riders(id, current_lat, current_lng),
+       reviews(id, restaurant_rating, rider_rating, comment),
        order_items(id, name_snapshot, price_snapshot, quantity, special_instructions,
          order_item_modifiers(id, name_snapshot, price_snapshot))`
     )

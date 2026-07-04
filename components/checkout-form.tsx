@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart, lineTotal } from "@/lib/cart/cart-context";
 import { formatPrice } from "@/types";
-import { createAddress, placeOrder } from "@/app/actions/orders";
+import {
+  createAddress,
+  placeOrder,
+  previewVoucher,
+} from "@/app/actions/orders";
 
 export interface Address {
   id: string;
@@ -36,6 +40,12 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   const [locating, setLocating] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Voucher state
+  const [voucherInput, setVoucherInput] = useState("");
+  const [voucher, setVoucher] = useState<{ code: string; discount: number } | null>(null);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [applying, setApplying] = useState(false);
+
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
@@ -55,7 +65,21 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
     );
   }
 
-  const total = subtotal + cart.delivery_fee;
+  const discount = voucher?.discount ?? 0;
+  const total = Math.max(subtotal - discount, 0) + cart.delivery_fee;
+
+  async function applyVoucher() {
+    setVoucherError(null);
+    setApplying(true);
+    const result = await previewVoucher(voucherInput, subtotal);
+    setApplying(false);
+    if (result.error || result.discount == null) {
+      setVoucher(null);
+      setVoucherError(result.error ?? "Could not apply voucher");
+      return;
+    }
+    setVoucher({ code: voucherInput.trim(), discount: result.discount });
+  }
 
   function captureLocation() {
     setLocating(true);
@@ -111,6 +135,7 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
     const result = await placeOrder({
       restaurant_id: cart.restaurant_id,
       address_id: selectedId,
+      voucher_code: voucher?.code,
       items: cart.lines.map((l) => ({
         menu_item_id: l.menu_item_id,
         quantity: l.quantity,
@@ -263,6 +288,53 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
         </p>
       </section>
 
+      {/* Voucher */}
+      <section className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-neutral-200">
+        <h2 className="font-semibold text-neutral-900">Voucher</h2>
+        {voucher ? (
+          <div className="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2.5 text-sm">
+            <span className="font-semibold text-emerald-800">
+              {voucher.code.toUpperCase()} applied — you save{" "}
+              {formatPrice(voucher.discount)}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setVoucher(null);
+                setVoucherInput("");
+              }}
+              className="text-emerald-700 hover:underline"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div className="mt-3 flex gap-2">
+            <input
+              type="text"
+              value={voucherInput}
+              onChange={(e) => {
+                setVoucherInput(e.target.value);
+                setVoucherError(null);
+              }}
+              placeholder="Enter voucher code"
+              className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm uppercase"
+            />
+            <button
+              type="button"
+              onClick={applyVoucher}
+              disabled={applying || !voucherInput.trim()}
+              className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+            >
+              {applying ? "Checking…" : "Apply"}
+            </button>
+          </div>
+        )}
+        {voucherError && (
+          <p className="mt-2 text-sm text-red-600">{voucherError}</p>
+        )}
+      </section>
+
       {/* Summary */}
       <section className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-neutral-200">
         <h2 className="font-semibold text-neutral-900">
@@ -289,6 +361,12 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
             <dt>Subtotal</dt>
             <dd>{formatPrice(subtotal)}</dd>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-emerald-700">
+              <dt>Voucher discount</dt>
+              <dd>−{formatPrice(discount)}</dd>
+            </div>
+          )}
           <div className="flex justify-between text-neutral-600">
             <dt>Delivery fee</dt>
             <dd>{formatPrice(cart.delivery_fee)}</dd>

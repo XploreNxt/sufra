@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Food Delivery Marketplace
 
-## Getting Started
+A multi-vendor food delivery platform for the Pakistani market (web-only MVP).
+Four sides in one Next.js app: **Customer**, **Vendor**, **Rider**, **Admin**.
 
-First, run the development server:
+Built phase-by-phase from `food-delivery-build-blueprint.md`. Phases 0–7 and 9
+are complete; Phase 8 (JazzCash/Easypaisa) is pending provider credentials.
+
+## Stack
+
+- **Next.js 16** (App Router, TypeScript) + **Tailwind 4**
+- **Supabase**: PostgreSQL, Auth, Realtime, RLS
+- Money paths (order creation, delivery completion, vouchers) run inside
+  Postgres functions — atomic, server-priced, RLS-safe
+
+## Running locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local` needs the Supabase project URL + keys (see `.env.example`).
+Database schema lives in `supabase/migrations/` (run in order in the
+Supabase SQL editor).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Test accounts (password: `Test1234!`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Email | Role | Landing |
+|---|---|---|
+| customer@test.com | customer | `/` browse → cart → checkout → track |
+| vendor@test.com | vendor | `/vendor` orders, menu, earnings |
+| rider@test.com | rider | `/rider` deliveries, COD ledger |
+| admin@test.com | admin | `/admin` approvals, monitor, settlement |
 
-## Learn More
+### Seed scripts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+node scripts/seed-users.mjs        # the 4 test accounts
+node scripts/seed-restaurants.mjs  # 3 restaurants w/ menus + modifiers
+node scripts/seed-rider.mjs        # active rider profile
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## What works end to end
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Customer browses (Roman-Urdu-tolerant search), builds a cart with item
+   options, applies a voucher, orders COD to an address with landmark + pin.
+2. Vendor accepts → preparing → ready (live queue, menu CRUD, open/close,
+   earnings minus commission).
+3. Rider goes online, self-assigns, navigates via Google Maps deep link,
+   collects cash — COD ledger tracks what they keep vs. owe.
+4. Admin approves vendors/riders, monitors orders live, reassigns/cancels,
+   sets commission, manages vouchers, settles rider cash.
+5. Everything updates in real time (Supabase Realtime + polling fallback);
+   customers see the rider moving on a map.
+6. Delivered orders can be rated — restaurant averages update automatically.
 
-## Deploy on Vercel
+## Deferred
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Phase 8**: JazzCash / Easypaisa (needs merchant sandbox credentials)
+- Phone OTP login UI exists; enable the Supabase phone provider + SMS
+  provider to activate (email/password is the dev auth)
+- Push/SMS notifications, proof-of-delivery photos, surge pricing, referrals

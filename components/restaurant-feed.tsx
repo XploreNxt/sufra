@@ -3,16 +3,17 @@
 import { useState } from "react";
 import type { Restaurant } from "@/types";
 import { RestaurantCard } from "@/components/restaurant-card";
+import { romanUrduMatch } from "@/lib/search";
 
 export function RestaurantFeed({ restaurants }: { restaurants: Restaurant[] }) {
   const [query, setQuery] = useState("");
 
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   const filtered = q
     ? restaurants.filter(
         (r) =>
-          r.name.toLowerCase().includes(q) ||
-          r.cuisine_types.some((c) => c.toLowerCase().includes(q))
+          romanUrduMatch(q, r.name) ||
+          r.cuisine_types.some((c) => romanUrduMatch(q, c))
       )
     : restaurants;
 
