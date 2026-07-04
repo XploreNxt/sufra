@@ -1,32 +1,71 @@
-import { redirect } from "next/navigation";
-import { getSessionProfile } from "@/lib/auth/session";
-import { LogoutButton } from "@/components/logout-button";
+import { getActiveRestaurant, getVendorOrders } from "@/lib/db/vendor";
+import { VendorOrderCard } from "@/components/vendor/order-card";
+import { AutoRefresh } from "@/components/vendor/auto-refresh";
 
-export default async function VendorDashboard() {
-  const profile = await getSessionProfile();
-  if (!profile) redirect("/login?next=/vendor");
-  if (profile.role !== "vendor" && profile.role !== "admin") redirect("/");
+export const dynamic = "force-dynamic";
+
+export default async function VendorOrdersPage() {
+  const { restaurant } = await getActiveRestaurant();
+  if (!restaurant) return null; // layout renders the empty state
+
+  const orders = await getVendorOrders(restaurant.id);
+
+  const incoming = orders.filter((o) => o.status === "pending");
+  const inProgress = orders.filter((o) =>
+    ["accepted", "preparing"].includes(o.status)
+  );
+  const handedOff = orders.filter((o) =>
+    ["ready", "assigned", "picked_up", "on_the_way"].includes(o.status)
+  );
+  const past = orders
+    .filter((o) => ["delivered", "rejected", "cancelled"].includes(o.status))
+    .slice(0, 10);
+
+  const Section = ({
+    title,
+    list,
+    empty,
+  }: {
+    title: string;
+    list: typeof orders;
+    empty: string;
+  }) => (
+    <section className="mt-6 first:mt-0">
+      <h2 className="text-lg font-bold text-neutral-900">
+        {title}
+        {list.length > 0 && (
+          <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+            {list.length}
+          </span>
+        )}
+      </h2>
+      {list.length === 0 ? (
+        <p className="mt-2 text-sm text-neutral-400">{empty}</p>
+      ) : (
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {list.map((o) => (
+            <VendorOrderCard key={o.id} order={o} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-neutral-50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-neutral-200">
-        <h1 className="text-2xl font-bold text-neutral-900">
-          Vendor dashboard
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Order queue, menu CRUD and earnings arrive in Phase 4.
-        </p>
-        <div className="mt-6 space-y-4">
-          <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Signed in as{" "}
-            <span className="font-semibold">
-              {profile.full_name ?? profile.phone}
-            </span>{" "}
-            ({profile.role})
-          </p>
-          <LogoutButton />
-        </div>
-      </div>
+    <main>
+      <AutoRefresh seconds={15} />
+      <Section
+        title="New orders"
+        list={incoming}
+        empty="No new orders — they'll appear here automatically."
+      />
+      <Section title="In the kitchen" list={inProgress} empty="Nothing cooking." />
+      <Section
+        title="Waiting for rider / on the way"
+        list={handedOff}
+        empty="No orders out for delivery."
+      />
+      <Section title="Recent history" list={past} empty="No past orders yet." />
     </main>
   );
 }

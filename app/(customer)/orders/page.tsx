@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/auth/session";
-import { getMyOrders, STATUS_COLORS, STATUS_LABELS } from "@/lib/db/orders";
+import { getMyOrders } from "@/lib/db/orders";
+import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 import { formatPrice } from "@/types";
 
 export const dynamic = "force-dynamic";
