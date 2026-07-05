@@ -9,11 +9,11 @@ export function CartHeaderLink() {
   return (
     <Link
       href="/cart"
-      className="relative rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100"
+      className="relative rounded-full border border-stone-300 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-700 transition-all hover:border-stone-400 hover:shadow-sm active:scale-95"
     >
       Cart
       {itemCount > 0 && (
-        <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1 text-xs font-bold text-white">
+        <span className="s-scale-in absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-amber-500 px-1 text-xs font-extrabold text-amber-950 shadow-md">
           {itemCount}
         </span>
       )}

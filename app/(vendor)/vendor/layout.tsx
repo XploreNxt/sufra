@@ -5,6 +5,7 @@ import { getActiveRestaurant } from "@/lib/db/vendor";
 import { LogoutButton } from "@/components/logout-button";
 import { OpenToggle } from "@/components/vendor/open-toggle";
 import { RestaurantSwitcher } from "@/components/vendor/restaurant-switcher";
+import { SufraLogo } from "@/components/brand";
 
 export default async function VendorLayout({
   children,
@@ -34,16 +35,11 @@ export default async function VendorLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 px-4">
+    <div className="flex min-h-screen flex-col">
+      <header className="s-glass sticky top-0 z-10 border-b border-stone-200/70">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4">
           <div className="flex min-w-0 items-center gap-3">
-            <Link
-              href="/vendor"
-              className="whitespace-nowrap text-lg font-bold text-emerald-700"
-            >
-              Vendor
-            </Link>
+            <SufraLogo suffix="Vendor" href="/vendor" />
             <RestaurantSwitcher
               restaurants={all.map((r) => ({ id: r.id, name: r.name }))}
               activeId={restaurant.id}

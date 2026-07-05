@@ -1,26 +1,212 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf8f5;
+  --foreground: #1c1917;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: #a7f3d0;
+  color: #064e3b;
+}
+
+/* ---------- Sufra motion system (CSS-only, light on low-end phones) ---------- */
+
+@keyframes s-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes s-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes s-slide-up {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 120%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes s-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes s-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+}
+
+@keyframes s-shimmer {
+  from {
+    background-position: 200% 50%;
+  }
+  to {
+    background-position: -200% 50%;
+  }
+}
+
+@keyframes s-ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  80%,
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.s-fade-up {
+  animation: s-fade-up 0.55s cubic-bezier(0.21, 0.9, 0.35, 1) both;
+}
+
+.s-scale-in {
+  animation: s-scale-in 0.35s cubic-bezier(0.21, 0.9, 0.35, 1) both;
+}
+
+.s-slide-up {
+  animation: s-slide-up 0.45s cubic-bezier(0.21, 0.9, 0.35, 1) both;
+}
+
+.s-fade {
+  animation: s-fade 0.3s ease both;
+}
+
+.s-float {
+  animation: s-float 5s ease-in-out infinite;
+}
+
+/* Stagger children — pair with .s-fade-up on the children */
+.s-stagger > * {
+  animation: s-fade-up 0.55s cubic-bezier(0.21, 0.9, 0.35, 1) both;
+}
+.s-stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.s-stagger > *:nth-child(2) { animation-delay: 0.09s; }
+.s-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.s-stagger > *:nth-child(4) { animation-delay: 0.21s; }
+.s-stagger > *:nth-child(5) { animation-delay: 0.27s; }
+.s-stagger > *:nth-child(6) { animation-delay: 0.33s; }
+.s-stagger > *:nth-child(7) { animation-delay: 0.39s; }
+.s-stagger > *:nth-child(8) { animation-delay: 0.45s; }
+.s-stagger > *:nth-child(n + 9) { animation-delay: 0.5s; }
+
+/* Brand gradient text */
+.s-gradient-text {
+  background: linear-gradient(100deg, #059669, #10b981 45%, #f59e0b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Glassy surfaces */
+.s-glass {
+  background: rgba(250, 248, 245, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Shimmering accent bar */
+.s-shimmer {
+  background: linear-gradient(
+    110deg,
+    #059669 30%,
+    #34d399 45%,
+    #fbbf24 55%,
+    #059669 70%
+  );
+  background-size: 200% 100%;
+  animation: s-shimmer 6s linear infinite;
+}
+
+/* Live pulse dot (order tracking, open badges) */
+.s-live-dot {
+  position: relative;
+  display: inline-flex;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+.s-live-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: s-ping-soft 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.s-live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+}
+
+/* Dotted food-pattern overlay for covers (pseudo-element so it can sit
+   on top of Tailwind gradient backgrounds without clobbering them) */
+.s-pattern::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.18) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 18px 18px;
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  .s-fade-up,
+  .s-scale-in,
+  .s-slide-up,
+  .s-fade,
+  .s-float,
+  .s-stagger > *,
+  .s-shimmer,
+  .s-live-dot::before {
+    animation: none !important;
+  }
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/auth/session";
 import { LogoutButton } from "@/components/logout-button";
+import { SufraLogo } from "@/components/brand";
 
 const NAV = [
   { href: "/admin", label: "Overview" },
@@ -22,12 +23,10 @@ export default async function AdminLayout({
   if (profile.role !== "admin") redirect("/");
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
-          <Link href="/admin" className="text-lg font-bold text-emerald-700">
-            Admin
-          </Link>
+    <div className="flex min-h-screen flex-col">
+      <header className="s-glass sticky top-0 z-10 border-b border-stone-200/70">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
+          <SufraLogo suffix="Admin" href="/admin" />
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-neutral-500 sm:inline">
               {profile.full_name ?? profile.email}

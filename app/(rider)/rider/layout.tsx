@@ -4,6 +4,7 @@ import { getSessionProfile } from "@/lib/auth/session";
 import { getRiderProfile } from "@/lib/db/rider";
 import { LogoutButton } from "@/components/logout-button";
 import { RiderOnlineToggle } from "@/components/rider/online-toggle";
+import { SufraLogo } from "@/components/brand";
 
 export default async function RiderLayout({
   children,
@@ -34,12 +35,10 @@ export default async function RiderLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex h-14 w-full max-w-2xl items-center justify-between gap-3 px-4">
-          <Link href="/rider" className="text-lg font-bold text-emerald-700">
-            Rider
-          </Link>
+    <div className="flex min-h-screen flex-col">
+      <header className="s-glass sticky top-0 z-10 border-b border-stone-200/70">
+        <div className="mx-auto flex h-16 w-full max-w-2xl items-center justify-between gap-3 px-4">
+          <SufraLogo suffix="Rider" href="/rider" />
           <div className="flex items-center gap-2">
             <RiderOnlineToggle isOnline={rider.is_online} />
             <LogoutButton />
