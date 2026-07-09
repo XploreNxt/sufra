@@ -5,12 +5,12 @@ import { LogoutButton } from "@/components/logout-button";
 import { SufraLogo } from "@/components/brand";
 
 const NAV = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/vendors", label: "Vendors" },
-  { href: "/admin/riders", label: "Riders" },
-  { href: "/admin/vouchers", label: "Vouchers" },
-  { href: "/admin/cod", label: "COD settlement" },
+  { href: "/", label: "Overview" },
+  { href: "/orders", label: "Orders" },
+  { href: "/vendors", label: "Vendors" },
+  { href: "/riders", label: "Riders" },
+  { href: "/vouchers", label: "Vouchers" },
+  { href: "/cod", label: "COD settlement" },
 ];
 
 export default async function AdminLayout({
@@ -18,15 +18,15 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Role + subdomain gating is enforced by proxy.ts.
   const profile = await getSessionProfile();
-  if (!profile) redirect("/login?next=/admin");
-  if (profile.role !== "admin") redirect("/");
+  if (!profile) redirect("/login");
 
   return (
     <div className="flex min-h-screen flex-col">
       <header className="s-glass sticky top-0 z-10 border-b border-stone-200/70">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-          <SufraLogo suffix="Admin" href="/admin" />
+          <SufraLogo suffix="Admin" href="/" />
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-neutral-500 sm:inline">
               {profile.full_name ?? profile.email}

@@ -12,9 +12,10 @@ export default async function VendorLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Role + subdomain gating is enforced by proxy.ts; here we only need the
+  // profile for rendering (and a safety redirect if somehow unauthenticated).
   const profile = await getSessionProfile();
-  if (!profile) redirect("/login?next=/vendor");
-  if (profile.role !== "vendor" && profile.role !== "admin") redirect("/");
+  if (!profile) redirect("/login");
 
   const { restaurant, all } = await getActiveRestaurant();
 
@@ -39,7 +40,7 @@ export default async function VendorLayout({
       <header className="s-glass sticky top-0 z-10 border-b border-stone-200/70">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4">
           <div className="flex min-w-0 items-center gap-3">
-            <SufraLogo suffix="Vendor" href="/vendor" />
+            <SufraLogo suffix="Vendor" href="/" />
             <RestaurantSwitcher
               restaurants={all.map((r) => ({ id: r.id, name: r.name }))}
               activeId={restaurant.id}
@@ -55,19 +56,19 @@ export default async function VendorLayout({
         </div>
         <nav className="mx-auto flex w-full max-w-5xl gap-1 px-4 pb-2 text-sm font-medium">
           <Link
-            href="/vendor"
+            href="/"
             className="rounded-lg px-3 py-1.5 text-neutral-700 hover:bg-neutral-100"
           >
             Orders
           </Link>
           <Link
-            href="/vendor/menu"
+            href="/menu"
             className="rounded-lg px-3 py-1.5 text-neutral-700 hover:bg-neutral-100"
           >
             Menu
           </Link>
           <Link
-            href="/vendor/earnings"
+            href="/earnings"
             className="rounded-lg px-3 py-1.5 text-neutral-700 hover:bg-neutral-100"
           >
             Earnings

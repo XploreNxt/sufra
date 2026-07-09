@@ -20,7 +20,7 @@ export default async function AdminOverviewPage() {
       hint: stats.pendingRestaurants
         ? `${stats.pendingRestaurants} pending approval`
         : undefined,
-      href: "/admin/vendors",
+      href: "/vendors",
     },
     {
       label: "Riders online",
@@ -28,13 +28,13 @@ export default async function AdminOverviewPage() {
       hint: stats.pendingRiders
         ? `${stats.pendingRiders} pending approval`
         : undefined,
-      href: "/admin/riders",
+      href: "/riders",
     },
     {
       label: "Unsettled COD",
       value: formatPrice(stats.unsettledCod),
       hint: "cash with riders",
-      href: "/admin/cod",
+      href: "/cod",
     },
   ];
 
@@ -79,7 +79,7 @@ export default async function AdminOverviewPage() {
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-bold text-neutral-900">Recent orders</h2>
         <Link
-          href="/admin/orders"
+          href="/orders"
           className="text-sm font-medium text-emerald-700 hover:underline"
         >
           Live monitor →

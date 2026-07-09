@@ -11,9 +11,9 @@ export default async function RiderLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Role + subdomain gating is enforced by proxy.ts.
   const profile = await getSessionProfile();
-  if (!profile) redirect("/login?next=/rider");
-  if (profile.role !== "rider" && profile.role !== "admin") redirect("/");
+  if (!profile) redirect("/login");
 
   const rider = await getRiderProfile();
 
@@ -38,7 +38,7 @@ export default async function RiderLayout({
     <div className="flex min-h-screen flex-col">
       <header className="s-glass sticky top-0 z-10 border-b border-stone-200/70">
         <div className="mx-auto flex h-16 w-full max-w-2xl items-center justify-between gap-3 px-4">
-          <SufraLogo suffix="Rider" href="/rider" />
+          <SufraLogo suffix="Rider" href="/" />
           <div className="flex items-center gap-2">
             <RiderOnlineToggle isOnline={rider.is_online} />
             <LogoutButton />
@@ -46,13 +46,13 @@ export default async function RiderLayout({
         </div>
         <nav className="mx-auto flex w-full max-w-2xl gap-1 px-4 pb-2 text-sm font-medium">
           <Link
-            href="/rider"
+            href="/"
             className="rounded-lg px-3 py-1.5 text-neutral-700 hover:bg-neutral-100"
           >
             Deliveries
           </Link>
           <Link
-            href="/rider/cod"
+            href="/cod"
             className="rounded-lg px-3 py-1.5 text-neutral-700 hover:bg-neutral-100"
           >
             Cash &amp; earnings

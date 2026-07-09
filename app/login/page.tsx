@@ -3,8 +3,9 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { homePathForRole } from "@/lib/auth/roles";
 import type { UserRole } from "@/types";
+
+const GENERIC_ERROR = "Incorrect email or password.";
 
 /**
  * Normalize Pakistani phone input to E.164.
@@ -35,7 +36,8 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function redirectByRole(userId: string) {
+  /** Customer-only door: non-customers get the same generic error. */
+  async function finishAsCustomer(userId: string): Promise<boolean> {
     const { data: profile } = await supabase
       .from("users")
       .select("role")
@@ -43,9 +45,17 @@ function LoginForm() {
       .single();
     const role = (profile?.role ?? "customer") as UserRole;
 
+    if (role !== "customer") {
+      await supabase.auth.signOut();
+      setLoading(false);
+      setError(GENERIC_ERROR);
+      return false;
+    }
+
     const next = searchParams.get("next");
-    router.replace(next ?? homePathForRole(role));
+    router.replace(next ?? "/");
     router.refresh();
+    return true;
   }
 
   async function signInWithEmail(e: React.FormEvent) {
@@ -60,10 +70,10 @@ function LoginForm() {
 
     if (error || !data.user) {
       setLoading(false);
-      setError(error?.message ?? "Sign-in failed. Try again.");
+      setError(GENERIC_ERROR);
       return;
     }
-    await redirectByRole(data.user.id);
+    await finishAsCustomer(data.user.id);
   }
 
   async function sendOtp(e: React.FormEvent) {
@@ -99,7 +109,7 @@ function LoginForm() {
       setError(error?.message ?? "Verification failed. Try again.");
       return;
     }
-    await redirectByRole(data.user.id);
+    await finishAsCustomer(data.user.id);
   }
 
   const inputClass =
