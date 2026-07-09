@@ -4,7 +4,7 @@
     {
       "name": "food-delivery",
       "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
-      "runtimeArgs": ["C:\\Users\\xncma\\OneDrive\\Documents\\Claude app\\Claude app\\Food Delivery\\node_modules\\next\\dist\\bin\\next", "dev", "C:\\Users\\xncma\\OneDrive\\Documents\\Claude app\\Claude app\\Food Delivery"],
+      "runtimeArgs": ["C:\\Users\\xncma\\OneDrive\\Documents\\Claude app\\Claude app\\Food Delivery\\node_modules\\next\\dist\\bin\\next", "dev", "--webpack", "C:\\Users\\xncma\\OneDrive\\Documents\\Claude app\\Claude app\\Food Delivery"],
       "port": 3000,
       "autoPort": true
     }
