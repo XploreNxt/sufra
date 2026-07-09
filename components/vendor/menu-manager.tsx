@@ -141,6 +141,19 @@ export function MenuManager({ restaurant }: { restaurant: RestaurantWithMenu }) 
         </p>
       )}
 
+      {restaurant.menu_categories.length === 0 && (
+        <div className="mb-4 rounded-xl bg-white p-6 text-center shadow-sm ring-1 ring-stone-200">
+          <p className="text-3xl">🍽️</p>
+          <p className="mt-2 font-semibold text-stone-800">
+            Your menu is empty
+          </p>
+          <p className="mt-1 text-sm text-stone-500">
+            Start by adding a category below (e.g. Starters, Main Course,
+            Drinks). Then an “+ Add item” button appears inside it.
+          </p>
+        </div>
+      )}
+
       {restaurant.menu_categories.map((cat) => (
         <section key={cat.id} className="mt-6 first:mt-0">
           <h2 className="text-lg font-bold text-neutral-900">{cat.name}</h2>

@@ -12,9 +12,11 @@ export default async function VendorMenuPage() {
 
   return (
     <main>
-      <h1 className="text-2xl font-bold text-neutral-900">Menu</h1>
+      <h1 className="text-2xl font-bold text-neutral-900">
+        Menu · {restaurant.name}
+      </h1>
       <p className="mb-5 mt-1 text-sm text-neutral-500">
-        Changes go live for customers immediately. Item options (spice level,
+        Add categories, then items with photos. Item options (spice level,
         add-ons) are managed by support for now.
       </p>
       <MenuManager restaurant={menu} />

@@ -4,12 +4,22 @@ import type { OrderStatus, Restaurant, RestaurantWithMenu } from "@/types";
 
 const ACTIVE_RESTAURANT_COOKIE = "active_restaurant";
 
-/** All restaurants owned by the signed-in vendor (RLS scopes rows). */
+/**
+ * Restaurants owned by the signed-in vendor. Must filter by owner
+ * explicitly — the restaurants read policy allows reading ANY active
+ * restaurant (for customer discovery), so RLS alone does not scope this.
+ */
 export async function getVendorRestaurants(): Promise<Restaurant[]> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from("restaurants")
     .select("*")
+    .eq("owner_user_id", user.id)
     .order("created_at");
   if (error) throw error;
   return (data ?? []) as Restaurant[];
