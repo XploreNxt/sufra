@@ -12,6 +12,38 @@ async function requireAdmin(): Promise<string | null> {
   return null;
 }
 
+export async function approveMenuItem(itemId: string): Promise<ActionResult> {
+  const denied = await requireAdmin();
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("menu_items")
+    .update({ status: "approved", rejection_reason: null })
+    .eq("id", itemId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/menu");
+  return {};
+}
+
+export async function rejectMenuItem(
+  itemId: string,
+  reason: string
+): Promise<ActionResult> {
+  const denied = await requireAdmin();
+  if (denied) return { error: denied };
+  if (!reason.trim()) return { error: "Please give a reason for the rejection" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("menu_items")
+    .update({ status: "rejected", rejection_reason: reason.trim() })
+    .eq("id", itemId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/menu");
+  return {};
+}
+
 export async function setRestaurantStatus(
   restaurantId: string,
   status: "pending" | "active" | "suspended"

@@ -115,6 +115,30 @@ export async function getCodLedgerAdmin(): Promise<AdminLedgerRow[]> {
   return (data ?? []) as unknown as AdminLedgerRow[];
 }
 
+export interface PendingMenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  status: string;
+  restaurants: { name: string } | null;
+  menu_categories: { name: string } | null;
+}
+
+export async function getPendingMenuItems(): Promise<PendingMenuItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("menu_items")
+    .select(
+      "id, name, description, price, image_url, status, restaurants(name), menu_categories(name)"
+    )
+    .eq("status", "pending")
+    .order("restaurant_id");
+  if (error) throw error;
+  return (data ?? []) as unknown as PendingMenuItem[];
+}
+
 export interface AdminStats {
   ordersToday: number;
   gmvDelivered: number;

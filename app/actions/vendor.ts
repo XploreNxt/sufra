@@ -94,8 +94,11 @@ export interface MenuItemInput {
   name: string;
   description: string;
   price: number;
+  image_url?: string | null;
 }
 
+// New items start as 'pending' (the column default) so customers don't see
+// them until an admin approves.
 export async function createMenuItem(
   restaurantId: string,
   categoryId: string,
@@ -110,14 +113,18 @@ export async function createMenuItem(
     name: input.name.trim(),
     description: input.description.trim() || null,
     price: input.price,
+    image_url: input.image_url ?? null,
     is_available: true,
     sort_order: 99,
+    status: "pending",
   });
   if (error) return { error: error.message };
   revalidatePath("/vendor/menu");
   return {};
 }
 
+// Any content edit sends the item back for review (hidden from customers
+// until re-approved) and clears a previous rejection reason.
 export async function updateMenuItem(
   itemId: string,
   input: MenuItemInput
@@ -131,6 +138,9 @@ export async function updateMenuItem(
       name: input.name.trim(),
       description: input.description.trim() || null,
       price: input.price,
+      image_url: input.image_url ?? null,
+      status: "pending",
+      rejection_reason: null,
     })
     .eq("id", itemId);
   if (error) return { error: error.message };

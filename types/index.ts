@@ -60,6 +60,8 @@ export interface ModifierGroup {
   modifiers: Modifier[];
 }
 
+export type MenuItemStatus = "approved" | "pending" | "rejected";
+
 export interface MenuItem {
   id: string;
   restaurant_id: string;
@@ -70,6 +72,8 @@ export interface MenuItem {
   image_url: string | null;
   is_available: boolean;
   sort_order: number;
+  status: MenuItemStatus;
+  rejection_reason: string | null;
   modifier_groups: ModifierGroup[];
 }
 
