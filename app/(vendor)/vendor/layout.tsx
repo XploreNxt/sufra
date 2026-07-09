@@ -4,7 +4,6 @@ import { getSessionProfile } from "@/lib/auth/session";
 import { getActiveRestaurant } from "@/lib/db/vendor";
 import { LogoutButton } from "@/components/logout-button";
 import { OpenToggle } from "@/components/vendor/open-toggle";
-import { RestaurantSwitcher } from "@/components/vendor/restaurant-switcher";
 import { SufraLogo } from "@/components/brand";
 
 export default async function VendorLayout({
@@ -17,7 +16,7 @@ export default async function VendorLayout({
   const profile = await getSessionProfile();
   if (!profile) redirect("/login");
 
-  const { restaurant, all } = await getActiveRestaurant();
+  const { restaurant } = await getActiveRestaurant();
 
   if (!restaurant) {
     return (
@@ -41,10 +40,9 @@ export default async function VendorLayout({
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4">
           <div className="flex min-w-0 items-center gap-3">
             <SufraLogo suffix="Vendor" href="/" />
-            <RestaurantSwitcher
-              restaurants={all.map((r) => ({ id: r.id, name: r.name }))}
-              activeId={restaurant.id}
-            />
+            <span className="truncate rounded-lg bg-stone-100 px-3 py-1.5 text-sm font-semibold text-stone-700">
+              {restaurant.name}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <OpenToggle
