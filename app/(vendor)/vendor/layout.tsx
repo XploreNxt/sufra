@@ -71,6 +71,12 @@ export default async function VendorLayout({
           >
             Earnings
           </Link>
+          <Link
+            href="/settings"
+            className="rounded-lg px-3 py-1.5 text-neutral-700 hover:bg-neutral-100"
+          >
+            Settings
+          </Link>
         </nav>
       </header>
       <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</div>

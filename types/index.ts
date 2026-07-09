@@ -21,6 +21,39 @@ export interface Profile {
   created_at: string;
 }
 
+export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
+export interface DayHours {
+  closed: boolean;
+  open: string; // "HH:MM"
+  close: string; // "HH:MM"
+}
+
+export type RestaurantHours = Record<DayKey, DayHours>;
+
+export const DAYS: Array<{ key: DayKey; label: string }> = [
+  { key: "mon", label: "Monday" },
+  { key: "tue", label: "Tuesday" },
+  { key: "wed", label: "Wednesday" },
+  { key: "thu", label: "Thursday" },
+  { key: "fri", label: "Friday" },
+  { key: "sat", label: "Saturday" },
+  { key: "sun", label: "Sunday" },
+];
+
+export function defaultHours(): RestaurantHours {
+  const day: DayHours = { closed: false, open: "11:00", close: "23:00" };
+  return {
+    mon: { ...day },
+    tue: { ...day },
+    wed: { ...day },
+    thu: { ...day },
+    fri: { ...day },
+    sat: { ...day },
+    sun: { ...day },
+  };
+}
+
 export interface Restaurant {
   id: string;
   owner_user_id: string;
@@ -29,6 +62,10 @@ export interface Restaurant {
   cuisine_types: string[];
   logo_url: string | null;
   cover_url: string | null;
+  pending_logo_url: string | null;
+  pending_cover_url: string | null;
+  branding_rejection_reason: string | null;
+  hours: RestaurantHours | null;
   address_text: string | null;
   lat: number | null;
   lng: number | null;

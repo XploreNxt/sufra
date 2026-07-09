@@ -139,6 +139,26 @@ export async function getPendingMenuItems(): Promise<PendingMenuItem[]> {
   return (data ?? []) as unknown as PendingMenuItem[];
 }
 
+export interface PendingBranding {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  cover_url: string | null;
+  pending_logo_url: string | null;
+  pending_cover_url: string | null;
+}
+
+export async function getPendingBranding(): Promise<PendingBranding[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select("id, name, logo_url, cover_url, pending_logo_url, pending_cover_url")
+    .or("pending_logo_url.not.is.null,pending_cover_url.not.is.null")
+    .order("name");
+  if (error) throw error;
+  return (data ?? []) as PendingBranding[];
+}
+
 export interface AdminStats {
   ordersToday: number;
   gmvDelivered: number;

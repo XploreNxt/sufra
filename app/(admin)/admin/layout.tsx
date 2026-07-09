@@ -7,7 +7,7 @@ import { SufraLogo } from "@/components/brand";
 const NAV = [
   { href: "/", label: "Overview" },
   { href: "/orders", label: "Orders" },
-  { href: "/menu", label: "Menu approvals" },
+  { href: "/menu", label: "Approvals" },
   { href: "/vendors", label: "Vendors" },
   { href: "/riders", label: "Riders" },
   { href: "/vouchers", label: "Vouchers" },

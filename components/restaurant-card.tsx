@@ -35,12 +35,31 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
       <div
         className={`s-pattern relative flex h-36 items-center justify-center overflow-hidden bg-gradient-to-br ${theme.cover}`}
       >
-        <span className="s-float text-6xl drop-shadow-lg transition-transform duration-500 group-hover:scale-125">
-          {theme.emoji}
-        </span>
-        <span className="absolute -bottom-6 -right-4 select-none text-8xl font-black text-white/10">
-          {restaurant.name.split(" ")[0]}
-        </span>
+        {restaurant.cover_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={restaurant.cover_url}
+            alt={restaurant.name}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <>
+            <span className="s-float text-6xl drop-shadow-lg transition-transform duration-500 group-hover:scale-125">
+              {theme.emoji}
+            </span>
+            <span className="absolute -bottom-6 -right-4 select-none text-8xl font-black text-white/10">
+              {restaurant.name.split(" ")[0]}
+            </span>
+          </>
+        )}
+        {restaurant.logo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={restaurant.logo_url}
+            alt=""
+            className="absolute bottom-3 left-3 h-11 w-11 rounded-xl object-cover shadow-md ring-2 ring-white"
+          />
+        )}
         {closed ? (
           <span className="absolute left-3 top-3 rounded-full bg-stone-900/85 px-3 py-1 text-xs font-bold text-white backdrop-blur">
             Closed

@@ -12,6 +12,60 @@ async function requireAdmin(): Promise<string | null> {
   return null;
 }
 
+export async function approveRestaurantBranding(
+  restaurantId: string
+): Promise<ActionResult> {
+  const denied = await requireAdmin();
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { data: r } = await supabase
+    .from("restaurants")
+    .select("pending_logo_url, pending_cover_url")
+    .eq("id", restaurantId)
+    .maybeSingle();
+  if (!r) return { error: "Restaurant not found" };
+
+  // Only apply the images that were actually changed.
+  const patch: Record<string, unknown> = {
+    pending_logo_url: null,
+    pending_cover_url: null,
+    branding_rejection_reason: null,
+  };
+  if (r.pending_logo_url) patch.logo_url = r.pending_logo_url;
+  if (r.pending_cover_url) patch.cover_url = r.pending_cover_url;
+
+  const { error } = await supabase
+    .from("restaurants")
+    .update(patch)
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/menu");
+  return {};
+}
+
+export async function rejectRestaurantBranding(
+  restaurantId: string,
+  reason: string
+): Promise<ActionResult> {
+  const denied = await requireAdmin();
+  if (denied) return { error: denied };
+  if (!reason.trim()) return { error: "Please give a reason for the rejection" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("restaurants")
+    .update({
+      pending_logo_url: null,
+      pending_cover_url: null,
+      branding_rejection_reason: reason.trim(),
+    })
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/menu");
+  return {};
+}
+
 export async function approveMenuItem(itemId: string): Promise<ActionResult> {
   const denied = await requireAdmin();
   if (denied) return { error: denied };
