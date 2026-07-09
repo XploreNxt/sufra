@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Explicit content sources (relative to this file) so class scanning works
+   regardless of the dev server's working directory — the Webpack build's
+   auto-detection otherwise scans process.cwd(), which isn't the project root. */
+@source "../app";
+@source "../components";
+
 :root {
   --background: #faf8f5;
   --foreground: #1c1917;
