@@ -115,21 +115,54 @@ export async function setRestaurantStatus(
   return {};
 }
 
-export async function updateRestaurantFees(
+export interface RestaurantDetailsInput {
+  name: string;
+  description: string;
+  cuisine_types: string; // comma separated
+  phone: string;
+  address_text: string;
+  lat: number | null;
+  lng: number | null;
+  commission_rate: number;
+  delivery_fee: number;
+  min_order: number;
+  default_prep_minutes: number;
+}
+
+/** Admin-only: edit every restaurant detail (name, address, phone, fees…). */
+export async function updateRestaurantDetails(
   restaurantId: string,
-  commissionRate: number,
-  deliveryFee: number
+  input: RestaurantDetailsInput
 ): Promise<ActionResult> {
   const denied = await requireAdmin();
   if (denied) return { error: denied };
-  if (commissionRate < 0 || commissionRate > 50)
-    return { error: "Commission must be 0–50%" };
-  if (deliveryFee < 0) return { error: "Delivery fee cannot be negative" };
+  if (!input.name.trim()) return { error: "Name is required" };
+  if (input.commission_rate < 0 || input.commission_rate > 50)
+    return { error: "Commission must be between 0 and 50%" };
+  if (input.delivery_fee < 0 || input.min_order < 0)
+    return { error: "Fees cannot be negative" };
+  if (input.default_prep_minutes < 0)
+    return { error: "Prep time cannot be negative" };
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("restaurants")
-    .update({ commission_rate: commissionRate, delivery_fee: deliveryFee })
+    .update({
+      name: input.name.trim(),
+      description: input.description.trim() || null,
+      cuisine_types: input.cuisine_types
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean),
+      phone: input.phone.trim() || null,
+      address_text: input.address_text.trim() || null,
+      lat: input.lat,
+      lng: input.lng,
+      commission_rate: input.commission_rate,
+      delivery_fee: input.delivery_fee,
+      min_order: input.min_order,
+      default_prep_minutes: input.default_prep_minutes,
+    })
     .eq("id", restaurantId);
   if (error) return { error: error.message };
   revalidatePath("/admin", "layout");

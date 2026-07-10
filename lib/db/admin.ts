@@ -34,11 +34,18 @@ export async function getAllOrders(range?: DateRange): Promise<AdminOrder[]> {
 export interface AdminRestaurant {
   id: string;
   name: string;
+  description: string | null;
+  cuisine_types: string[];
+  phone: string | null;
+  address_text: string | null;
+  lat: number | null;
+  lng: number | null;
   status: "pending" | "active" | "suspended";
   is_open: boolean;
   commission_rate: number;
   delivery_fee: number;
   min_order: number;
+  default_prep_minutes: number;
   created_at: string;
   users: { full_name: string | null; email: string | null } | null;
 }
@@ -48,8 +55,10 @@ export async function getRestaurantsAdmin(): Promise<AdminRestaurant[]> {
   const { data, error } = await supabase
     .from("restaurants")
     .select(
-      `id, name, status, is_open, commission_rate, delivery_fee, min_order,
-       created_at, users!restaurants_owner_user_id_fkey(full_name, email)`
+      `id, name, description, cuisine_types, phone, address_text, lat, lng,
+       status, is_open, commission_rate, delivery_fee, min_order,
+       default_prep_minutes, created_at,
+       users!restaurants_owner_user_id_fkey(full_name, email)`
     )
     .order("created_at");
   if (error) throw error;
