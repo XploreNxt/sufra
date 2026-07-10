@@ -1,7 +1,26 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import type { OrderStatus, Restaurant, RestaurantWithMenu } from "@/types";
+import type {
+  Bundle,
+  OrderStatus,
+  Restaurant,
+  RestaurantWithMenu,
+} from "@/types";
 import type { DateRange } from "@/lib/datetime";
+
+/** All bundles (active + inactive) for the vendor's own restaurant. */
+export async function getVendorBundles(restaurantId: string): Promise<Bundle[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("bundles")
+    .select(
+      "id, restaurant_id, name, description, image_url, price, is_active, sort_order, bundle_items(id, quantity, menu_items(name))"
+    )
+    .eq("restaurant_id", restaurantId)
+    .order("sort_order");
+  if (error) throw error;
+  return (data ?? []) as unknown as Bundle[];
+}
 
 const ACTIVE_RESTAURANT_COOKIE = "active_restaurant";
 

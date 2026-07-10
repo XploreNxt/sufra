@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { MenuItem, RestaurantWithMenu } from "@/types";
+import type { Bundle, MenuItem, RestaurantWithMenu } from "@/types";
 import { formatPrice } from "@/types";
-import { useCart, type CartModifier } from "@/lib/cart/cart-context";
+import { useCart, type CartLine, type CartModifier } from "@/lib/cart/cart-context";
 
 export function RestaurantMenu({
   restaurant,
+  bundles = [],
 }: {
   restaurant: RestaurantWithMenu;
+  bundles?: Bundle[];
 }) {
   const { cart, itemCount, subtotal, addLine } = useCart();
   const [picking, setPicking] = useState<MenuItem | null>(null);
@@ -21,15 +23,7 @@ export function RestaurantMenu({
     min_order: Number(restaurant.min_order),
   };
 
-  function add(item: MenuItem, modifiers: CartModifier[], quantity: number, note?: string) {
-    const line = {
-      menu_item_id: item.id,
-      name: item.name,
-      unit_price: Number(item.price),
-      quantity,
-      modifiers,
-      special_instructions: note,
-    };
+  function addToCart(line: Omit<CartLine, "key">) {
     const ok = addLine(cartInfo, line);
     if (!ok) {
       const replace = window.confirm(
@@ -39,8 +33,89 @@ export function RestaurantMenu({
     }
   }
 
+  function add(item: MenuItem, modifiers: CartModifier[], quantity: number, note?: string) {
+    addToCart({
+      menu_item_id: item.id,
+      name: item.name,
+      unit_price: Number(item.price),
+      quantity,
+      modifiers,
+      special_instructions: note,
+    });
+  }
+
+  function addBundle(bundle: Bundle) {
+    addToCart({
+      kind: "bundle",
+      bundle_id: bundle.id,
+      menu_item_id: "",
+      name: bundle.name,
+      unit_price: Number(bundle.price),
+      quantity: 1,
+      modifiers: bundle.bundle_items.map((bi) => ({
+        id: bi.id,
+        name: `${bi.quantity}× ${bi.menu_items?.name ?? "item"}`,
+        price_delta: 0,
+      })),
+    });
+  }
+
   return (
     <>
+      {bundles.length > 0 && (
+        <section className="mt-8">
+          <h2 className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-stone-900">
+            🎁 Offers &amp; bundles
+            <span className="h-px flex-1 bg-gradient-to-r from-amber-200 to-transparent" />
+          </h2>
+          <div className="s-stagger mt-4 grid gap-3 sm:grid-cols-2">
+            {bundles.map((b) => (
+              <div
+                key={b.id}
+                className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-amber-200"
+              >
+                {b.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={b.image_url}
+                    alt={b.name}
+                    className="h-32 w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-32 w-full items-center justify-center bg-gradient-to-br from-amber-400 to-orange-500 text-5xl">
+                    🎁
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-bold text-stone-900">{b.name}</h3>
+                    <span className="whitespace-nowrap font-extrabold text-stone-900">
+                      {formatPrice(b.price)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs font-medium text-stone-500">
+                    {b.bundle_items
+                      .map((bi) => `${bi.quantity}× ${bi.menu_items?.name ?? "item"}`)
+                      .join(" · ")}
+                  </p>
+                  {b.description && (
+                    <p className="mt-1 text-sm text-stone-500">{b.description}</p>
+                  )}
+                  {restaurant.is_open && (
+                    <button
+                      onClick={() => addBundle(b)}
+                      className="mt-3 w-full rounded-full bg-amber-500 px-4 py-2 text-sm font-bold text-amber-950 shadow-sm transition-all hover:bg-amber-400 active:scale-95"
+                    >
+                      + Add deal
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {restaurant.menu_categories.map((cat) => (
         <section key={cat.id} className="mt-10">
           <h2 className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-stone-900">

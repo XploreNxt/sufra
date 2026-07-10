@@ -126,6 +126,24 @@ export type RestaurantWithMenu = Restaurant & {
   menu_categories: MenuCategory[];
 };
 
+export interface BundleItemRef {
+  id: string;
+  quantity: number;
+  menu_items: { name: string } | null;
+}
+
+export interface Bundle {
+  id: string;
+  restaurant_id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  price: number;
+  is_active: boolean;
+  sort_order: number;
+  bundle_items: BundleItemRef[];
+}
+
 /** "Rs 1,400" — prices come back from Postgres numeric as strings. */
 export function formatPrice(value: number | string): string {
   return `Rs ${Number(value).toLocaleString("en-PK")}`;

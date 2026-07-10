@@ -12,6 +12,7 @@ export interface PlaceOrderInput {
     modifier_ids: string[];
     special_instructions?: string;
   }>;
+  bundles?: Array<{ bundle_id: string; quantity: number }>;
 }
 
 export async function placeOrder(
@@ -24,6 +25,7 @@ export async function placeOrder(
     p_address_id: input.address_id,
     p_items: input.items,
     p_voucher_code: input.voucher_code?.trim() || null,
+    p_bundles: input.bundles ?? [],
   });
 
   if (error) return { error: error.message };

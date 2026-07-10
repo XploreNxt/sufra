@@ -1,5 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Restaurant, RestaurantWithMenu } from "@/types";
+import type { Bundle, Restaurant, RestaurantWithMenu } from "@/types";
+
+/** Active offers/bundles for a restaurant's customer page. */
+export async function getRestaurantBundles(
+  restaurantId: string
+): Promise<Bundle[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("bundles")
+    .select(
+      "id, restaurant_id, name, description, image_url, price, is_active, sort_order, bundle_items(id, quantity, menu_items(name))"
+    )
+    .eq("restaurant_id", restaurantId)
+    .eq("is_active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return (data ?? []) as unknown as Bundle[];
+}
 
 export interface RestaurantReview {
   id: string;

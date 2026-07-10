@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  getRestaurantBundles,
   getRestaurantReviews,
   getRestaurantWithMenu,
 } from "@/lib/db/restaurants";
@@ -20,7 +21,10 @@ export default async function RestaurantPage({
   const { id } = await params;
   const restaurant = await getRestaurantWithMenu(id).catch(() => null);
   if (!restaurant || restaurant.status !== "active") notFound();
-  const reviews = await getRestaurantReviews(id).catch(() => []);
+  const [reviews, bundles] = await Promise.all([
+    getRestaurantReviews(id).catch(() => []),
+    getRestaurantBundles(id).catch(() => []),
+  ]);
 
   const today = restaurant.hours?.[DAY_KEYS[new Date().getDay()]];
   const hoursLabel = today
@@ -109,7 +113,7 @@ export default async function RestaurantPage({
         </div>
       </div>
 
-      <RestaurantMenu restaurant={restaurant} />
+      <RestaurantMenu restaurant={restaurant} bundles={bundles} />
 
       {reviews.length > 0 && (
         <section className="mt-12">

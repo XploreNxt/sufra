@@ -16,11 +16,13 @@ export interface CartModifier {
 
 export interface CartLine {
   key: string; // unique per line (same item w/ different options = 2 lines)
-  menu_item_id: string;
+  kind?: "item" | "bundle"; // defaults to "item"
+  menu_item_id: string; // empty for bundles
+  bundle_id?: string; // set for bundles
   name: string;
   unit_price: number;
   quantity: number;
-  modifiers: CartModifier[];
+  modifiers: CartModifier[]; // for bundles: the included items (price 0)
   special_instructions?: string;
 }
 

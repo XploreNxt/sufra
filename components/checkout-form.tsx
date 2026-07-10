@@ -137,15 +137,22 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
     setError(null);
     setPlacing(true);
 
+    const itemLines = cart.lines.filter((l) => l.kind !== "bundle");
+    const bundleLines = cart.lines.filter((l) => l.kind === "bundle");
+
     const result = await placeOrder({
       restaurant_id: cart.restaurant_id,
       address_id: selectedId,
       voucher_code: voucher?.code,
-      items: cart.lines.map((l) => ({
+      items: itemLines.map((l) => ({
         menu_item_id: l.menu_item_id,
         quantity: l.quantity,
         modifier_ids: l.modifiers.map((m) => m.id),
         special_instructions: l.special_instructions,
+      })),
+      bundles: bundleLines.map((l) => ({
+        bundle_id: l.bundle_id as string,
+        quantity: l.quantity,
       })),
     });
 
