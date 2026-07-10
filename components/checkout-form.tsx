@@ -87,13 +87,43 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   }
 
   function captureLocation() {
+    setError(null);
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCoords({ lat, lng });
+        // Reverse-geocode so the address field fills itself in.
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const j = await res.json();
+          const a = j?.address ?? {};
+          const line = [
+            a.house_number,
+            a.road,
+            a.neighbourhood ?? a.suburb,
+            a.city ?? a.town ?? a.village,
+          ]
+            .filter(Boolean)
+            .join(", ");
+          if (line || j?.display_name) setAddressText(line || j.display_name);
+        } catch {
+          /* keep the pin even if the lookup fails */
+        }
         setLocating(false);
       },
-      () => setLocating(false),
+      (err) => {
+        setLocating(false);
+        setError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location permission denied — please enter your address manually."
+            : "Couldn't get your location — please enter your address manually."
+        );
+      },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }
