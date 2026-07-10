@@ -4,6 +4,7 @@ import { getSessionProfile } from "@/lib/auth/session";
 import { getOrder } from "@/lib/db/orders";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 import { formatPrice } from "@/types";
+import { formatDateTime } from "@/lib/datetime";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { TrackOrderMap } from "@/components/customer/track-order";
 import { ReviewForm } from "@/components/customer/review-form";
@@ -45,11 +46,7 @@ export default async function OrderDetailPage({
               Order at {order.restaurants?.name ?? "Restaurant"}
             </h1>
             <p className="mt-0.5 text-sm text-neutral-500">
-              Placed{" "}
-              {new Date(order.placed_at).toLocaleString("en-PK", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
+              Placed {formatDateTime(order.placed_at)}
             </p>
           </div>
           <span

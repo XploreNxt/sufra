@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAdminStats, getAllOrders } from "@/lib/db/admin";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 import { formatPrice } from "@/types";
+import { formatDateTime } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -103,11 +104,8 @@ export default async function AdminOverviewPage() {
                   #{o.id.slice(0, 8)}
                 </td>
                 <td className="px-4 py-2.5">{o.restaurants?.name}</td>
-                <td className="px-4 py-2.5 text-neutral-500">
-                  {new Date(o.placed_at).toLocaleString("en-PK", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
+                <td className="whitespace-nowrap px-4 py-2.5 text-neutral-500">
+                  {formatDateTime(o.placed_at)}
                 </td>
                 <td className="px-4 py-2.5 text-right">{formatPrice(o.total)}</td>
                 <td className="px-4 py-2.5 text-right">

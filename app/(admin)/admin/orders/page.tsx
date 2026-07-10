@@ -1,12 +1,19 @@
 import { getAllOrders, getAssignableRiders } from "@/lib/db/admin";
 import { OrdersMonitor } from "@/components/admin/orders-monitor";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
+import { resolveRange } from "@/lib/datetime";
+import { DateRangeFilter } from "@/components/date-range-filter";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
+}) {
+  const { range } = resolveRange(await searchParams);
   const [orders, riders] = await Promise.all([
-    getAllOrders(),
+    getAllOrders(range),
     getAssignableRiders(),
   ]);
 
@@ -18,6 +25,7 @@ export default async function AdminOrdersPage() {
         Updates live. Assign or reassign riders on orders that are ready;
         cancel refunds paid amounts.
       </p>
+      <DateRangeFilter />
       <OrdersMonitor orders={orders} riders={riders} />
     </main>
   );

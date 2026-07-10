@@ -5,6 +5,7 @@ import { adminAssignRider, adminCancelOrder } from "@/app/actions/admin";
 import type { AdminOrder } from "@/lib/db/admin";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 import { formatPrice } from "@/types";
+import { formatDateTime } from "@/lib/datetime";
 
 const OPEN_STATUSES = [
   "pending",
@@ -74,11 +75,8 @@ export function OrdersMonitor({
               <td className="px-4 py-2.5 text-neutral-600">
                 {o.riders?.users?.full_name ?? "—"}
               </td>
-              <td className="px-4 py-2.5 text-neutral-500">
-                {new Date(o.placed_at).toLocaleTimeString("en-PK", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+              <td className="whitespace-nowrap px-4 py-2.5 text-neutral-500">
+                {formatDateTime(o.placed_at)}
               </td>
               <td className="px-4 py-2.5 text-right">{formatPrice(o.total)}</td>
               <td className="px-4 py-2.5 text-right">

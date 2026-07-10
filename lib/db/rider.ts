@@ -73,15 +73,24 @@ export interface LedgerRow {
   amount_owed_to_platform: number;
   is_settled: boolean;
   settled_at: string | null;
+  delivered_at: string | null;
 }
 
 export async function getCodLedger(): Promise<LedgerRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("cod_ledger")
-    .select("id, order_id, amount_collected, amount_owed_to_platform, is_settled, settled_at")
+    .select(
+      "id, order_id, amount_collected, amount_owed_to_platform, is_settled, settled_at, orders(delivered_at)"
+    )
     .order("is_settled")
-    .limit(100);
+    .limit(300);
   if (error) throw error;
-  return (data ?? []) as LedgerRow[];
+  type Row = Omit<LedgerRow, "delivered_at"> & {
+    orders: { delivered_at: string | null } | null;
+  };
+  return ((data ?? []) as unknown as Row[]).map(({ orders, ...r }) => ({
+    ...r,
+    delivered_at: orders?.delivered_at ?? null,
+  }));
 }

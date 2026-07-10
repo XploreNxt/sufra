@@ -5,6 +5,7 @@ import { updateOrderStatus } from "@/app/actions/vendor";
 import type { VendorOrder } from "@/lib/db/vendor";
 import type { OrderStatus } from "@/types";
 import { formatPrice } from "@/types";
+import { formatDateTime } from "@/lib/datetime";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 
 const NEXT_ACTIONS: Partial<
@@ -39,11 +40,8 @@ export function VendorOrderCard({ order }: { order: VendorOrder }) {
             #{order.id.slice(0, 8)}
           </span>
           <p className="text-sm text-neutral-500">
-            {new Date(order.placed_at).toLocaleTimeString("en-PK", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}{" "}
-            · {order.payment_method.toUpperCase()}
+            {formatDateTime(order.placed_at)} ·{" "}
+            {order.payment_method.toUpperCase()}
           </p>
         </div>
         <span

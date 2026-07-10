@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus, Restaurant, RestaurantWithMenu } from "@/types";
+import type { DateRange } from "@/lib/datetime";
 
 const ACTIVE_RESTAURANT_COOKIE = "active_restaurant";
 
@@ -106,15 +107,20 @@ export interface EarningsRow {
 }
 
 export async function getDeliveredOrders(
-  restaurantId: string
+  restaurantId: string,
+  range?: DateRange
 ): Promise<EarningsRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("orders")
     .select("id, subtotal, total, delivered_at")
     .eq("restaurant_id", restaurantId)
-    .eq("status", "delivered")
-    .order("delivered_at", { ascending: false });
+    .eq("status", "delivered");
+  if (range?.from) query = query.gte("delivered_at", range.from.toISOString());
+  if (range?.to) query = query.lte("delivered_at", range.to.toISOString());
+  const { data, error } = await query.order("delivered_at", {
+    ascending: false,
+  });
   if (error) throw error;
   return (data ?? []) as EarningsRow[];
 }

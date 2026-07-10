@@ -4,22 +4,31 @@ import { getSessionProfile } from "@/lib/auth/session";
 import { getMyOrders } from "@/lib/db/orders";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 import { formatPrice } from "@/types";
+import { formatDateTime, resolveRange } from "@/lib/datetime";
+import { DateRangeFilter } from "@/components/date-range-filter";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrdersPage() {
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
+}) {
   const profile = await getSessionProfile();
   if (!profile) redirect("/login?next=/orders");
 
-  const orders = await getMyOrders();
+  const { range } = resolveRange(await searchParams);
+  const orders = await getMyOrders(range);
 
   return (
     <main className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold text-neutral-900">Your orders</h1>
+      <h1 className="mb-5 text-2xl font-bold text-neutral-900">Your orders</h1>
+
+      <DateRangeFilter />
 
       {orders.length === 0 ? (
         <div className="mt-10 text-center">
-          <p className="text-neutral-500">No orders yet.</p>
+          <p className="text-neutral-500">No orders in this period.</p>
           <Link
             href="/"
             className="mt-4 inline-block rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white transition hover:bg-emerald-700"
@@ -40,10 +49,7 @@ export default async function OrdersPage() {
                   {o.restaurants?.name ?? "Restaurant"}
                 </h3>
                 <p className="mt-0.5 text-sm text-neutral-500">
-                  {new Date(o.placed_at).toLocaleString("en-PK", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
+                  {formatDateTime(o.placed_at)}
                 </p>
               </div>
               <div className="text-right">

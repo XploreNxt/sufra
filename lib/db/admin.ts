@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/types";
+import type { DateRange } from "@/lib/datetime";
 
 export interface AdminOrder {
   id: string;
@@ -12,17 +13,20 @@ export interface AdminOrder {
   riders: { id: string; users: { full_name: string | null } | null } | null;
 }
 
-export async function getAllOrders(): Promise<AdminOrder[]> {
+export async function getAllOrders(range?: DateRange): Promise<AdminOrder[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("orders")
     .select(
       `id, status, total, payment_method, payment_status, placed_at,
        restaurants(name),
        riders(id, users(full_name))`
-    )
+    );
+  if (range?.from) query = query.gte("placed_at", range.from.toISOString());
+  if (range?.to) query = query.lte("placed_at", range.to.toISOString());
+  const { data, error } = await query
     .order("placed_at", { ascending: false })
-    .limit(100);
+    .limit(200);
   if (error) throw error;
   return (data ?? []) as unknown as AdminOrder[];
 }
