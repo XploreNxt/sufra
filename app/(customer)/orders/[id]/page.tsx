@@ -7,7 +7,6 @@ import { formatPrice } from "@/types";
 import { formatDateTime } from "@/lib/datetime";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { TrackOrderMap } from "@/components/customer/track-order";
-import { ReviewForm } from "@/components/customer/review-form";
 
 const TRACKABLE = ["assigned", "picked_up", "on_the_way"];
 
@@ -151,30 +150,15 @@ export default async function OrderDetailPage({
           </>
         )}
 
-        {order.status === "delivered" &&
-          (order.reviews ? (
-            <div className="mt-6 rounded-xl bg-neutral-50 p-4">
-              <h2 className="font-semibold text-neutral-900">Your review</h2>
-              <p className="mt-1 text-sm text-amber-500">
-                {"★".repeat(order.reviews.restaurant_rating ?? 0)}
-                <span className="text-neutral-300">
-                  {"★".repeat(5 - (order.reviews.restaurant_rating ?? 0))}
-                </span>
-                {order.reviews.rider_rating != null && (
-                  <span className="ml-3 text-neutral-500">
-                    Rider: {order.reviews.rider_rating}/5
-                  </span>
-                )}
-              </p>
-              {order.reviews.comment && (
-                <p className="mt-1 text-sm text-neutral-600">
-                  “{order.reviews.comment}”
-                </p>
-              )}
-            </div>
-          ) : (
-            <ReviewForm orderId={order.id} hasRider={order.rider_id != null} />
-          ))}
+        <p className="mt-6 border-t border-neutral-200 pt-4 text-center text-sm text-neutral-500">
+          Need help with this order? Email{" "}
+          <a
+            href="mailto:support@sufra.com"
+            className="font-semibold text-emerald-700 hover:underline"
+          >
+            support@sufra.com
+          </a>
+        </p>
       </div>
     </main>
   );

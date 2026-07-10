@@ -30,6 +30,7 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   );
   const [showForm, setShowForm] = useState(addresses.length === 0);
   const [placing, setPlacing] = useState(false);
+  const [placed, setPlaced] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // New-address form state
@@ -50,6 +51,17 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   useEffect(() => setHydrated(true), []);
 
   if (!hydrated) return null;
+
+  if (placed) {
+    return (
+      <div className="mt-16 flex flex-col items-center text-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+        <p className="mt-4 font-semibold text-neutral-700">
+          Order placed! Taking you to your order…
+        </p>
+      </div>
+    );
+  }
 
   if (!cart || cart.lines.length === 0) {
     return (
@@ -191,6 +203,9 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
       setError(result.error ?? "Could not place order");
       return;
     }
+    // Flag success before clearing the cart so we render the "placed"
+    // transition instead of flashing the empty-cart screen during redirect.
+    setPlaced(true);
     clearCart();
     router.replace(`/orders/${result.orderId}`);
   }
