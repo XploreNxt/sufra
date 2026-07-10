@@ -1,6 +1,7 @@
 import { getActiveRestaurant, getVendorOrders } from "@/lib/db/vendor";
 import { VendorOrderCard } from "@/components/vendor/order-card";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
+import { NewOrderAlert } from "@/components/vendor/new-order-alert";
 
 export const dynamic = "force-dynamic";
 
@@ -10,13 +11,16 @@ export default async function VendorOrdersPage() {
 
   const orders = await getVendorOrders(restaurant.id);
 
-  const incoming = orders.filter((o) => o.status === "pending");
-  const inProgress = orders.filter((o) =>
-    ["accepted", "preparing"].includes(o.status)
-  );
+  const incoming = orders.filter((o) => o.status === "accepted");
+  const inProgress = orders.filter((o) => o.status === "preparing");
   const handedOff = orders.filter((o) =>
     ["ready", "assigned", "picked_up", "on_the_way"].includes(o.status)
   );
+
+  // Auto-confirmed orders the vendor hasn't seen yet drive the bell + popup.
+  const unacknowledged = incoming
+    .filter((o) => !o.acknowledged_at)
+    .map((o) => ({ id: o.id, total: o.total, placed_at: o.placed_at }));
   const past = orders
     .filter((o) => ["delivered", "rejected", "cancelled"].includes(o.status))
     .slice(0, 10);
@@ -59,6 +63,7 @@ export default async function VendorOrdersPage() {
           { table: "orders", filter: `restaurant_id=eq.${restaurant.id}` },
         ]}
       />
+      <NewOrderAlert orders={unacknowledged} />
       <Section
         title="New orders"
         list={incoming}

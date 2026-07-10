@@ -56,10 +56,10 @@ export default async function OrderDetailPage({
           </span>
         </div>
 
-        {order.status === "pending" && (
-          <p className="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Your order has been sent to the restaurant. This page updates
-            live — no need to refresh.
+        {order.status === "accepted" && (
+          <p className="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            ✅ Order confirmed! The kitchen will start preparing it shortly.
+            This page updates live — no need to refresh.
           </p>
         )}
 

@@ -2,7 +2,7 @@ import type { OrderStatus } from "@/types";
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Waiting for restaurant",
-  accepted: "Accepted",
+  accepted: "Confirmed",
   preparing: "Preparing",
   ready: "Ready for pickup",
   assigned: "Rider assigned",

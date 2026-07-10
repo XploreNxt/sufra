@@ -7,12 +7,32 @@ import type { OrderStatus } from "@/types";
 
 type ActionResult = { error?: string };
 
-/** Legal vendor-side transitions. Rider/admin transitions live elsewhere. */
+/**
+ * Legal vendor-side transitions. Orders are auto-confirmed ('accepted') at
+ * checkout, so there's no accept step — the vendor starts preparing. A
+ * cancel escape hatch stays available in case they truly can't fulfil.
+ */
 const VENDOR_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
-  pending: ["accepted", "rejected"],
-  accepted: ["preparing"],
-  preparing: ["ready"],
+  accepted: ["preparing", "cancelled"],
+  preparing: ["ready", "cancelled"],
 };
+
+/** Stamp acknowledged_at so the new-order alarm stops for these orders. */
+export async function acknowledgeOrders(
+  orderIds: string[]
+): Promise<ActionResult> {
+  if (orderIds.length === 0) return {};
+  const supabase = await createClient();
+  // RLS scopes this to the vendor's own restaurant orders.
+  const { error } = await supabase
+    .from("orders")
+    .update({ acknowledged_at: new Date().toISOString() })
+    .in("id", orderIds)
+    .is("acknowledged_at", null);
+  if (error) return { error: error.message };
+  revalidatePath("/vendor");
+  return {};
+}
 
 export async function updateOrderStatus(
   orderId: string,

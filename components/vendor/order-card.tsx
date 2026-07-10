@@ -11,11 +11,10 @@ import { STATUS_COLORS, STATUS_LABELS } from "@/lib/order-status";
 const NEXT_ACTIONS: Partial<
   Record<OrderStatus, Array<{ to: OrderStatus; label: string; danger?: boolean }>>
 > = {
-  pending: [
-    { to: "accepted", label: "Accept order" },
-    { to: "rejected", label: "Reject", danger: true },
+  accepted: [
+    { to: "preparing", label: "Start preparing" },
+    { to: "cancelled", label: "Cancel", danger: true },
   ],
-  accepted: [{ to: "preparing", label: "Start preparing" }],
   preparing: [{ to: "ready", label: "Mark ready" }],
 };
 

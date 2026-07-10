@@ -69,6 +69,7 @@ export interface VendorOrder {
   placed_at: string;
   accepted_at: string | null;
   ready_at: string | null;
+  acknowledged_at: string | null;
   order_items: Array<{
     id: string;
     name_snapshot: string;
@@ -86,7 +87,7 @@ export async function getVendorOrders(
     .from("orders")
     .select(
       `id, status, subtotal, delivery_fee, total, payment_method,
-       placed_at, accepted_at, ready_at,
+       placed_at, accepted_at, ready_at, acknowledged_at,
        order_items(id, name_snapshot, quantity, special_instructions,
          order_item_modifiers(id, name_snapshot))`
     )
