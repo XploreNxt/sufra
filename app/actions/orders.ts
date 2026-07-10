@@ -32,12 +32,14 @@ export async function placeOrder(
 
 export async function previewVoucher(
   code: string,
-  subtotal: number
+  subtotal: number,
+  restaurantId: string
 ): Promise<{ discount?: number; error?: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("preview_voucher", {
     p_code: code.trim(),
     p_subtotal: subtotal,
+    p_restaurant: restaurantId,
   });
   if (error) return { error: error.message };
   return { discount: Number(data) };

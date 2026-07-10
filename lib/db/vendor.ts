@@ -99,11 +99,42 @@ export async function getVendorMenu(
   return r;
 }
 
+export interface VendorVoucher {
+  id: string;
+  code: string;
+  discount_type: "percent" | "fixed";
+  value: number;
+  min_order: number;
+  max_discount: number | null;
+  valid_to: string | null;
+  usage_limit: number | null;
+  times_used: number;
+  is_active: boolean;
+}
+
+export async function getVendorVouchers(
+  restaurantId: string
+): Promise<VendorVoucher[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("vouchers")
+    .select(
+      "id, code, discount_type, value, min_order, max_discount, valid_to, usage_limit, times_used, is_active"
+    )
+    .eq("restaurant_id", restaurantId)
+    .order("is_active", { ascending: false })
+    .order("code");
+  if (error) throw error;
+  return (data ?? []) as VendorVoucher[];
+}
+
 export interface EarningsRow {
   id: string;
   subtotal: number;
+  discount: number;
   total: number;
   delivered_at: string | null;
+  vouchers: { restaurant_id: string | null } | null;
 }
 
 export async function getDeliveredOrders(
@@ -113,7 +144,7 @@ export async function getDeliveredOrders(
   const supabase = await createClient();
   let query = supabase
     .from("orders")
-    .select("id, subtotal, total, delivered_at")
+    .select("id, subtotal, discount, total, delivered_at, vouchers(restaurant_id)")
     .eq("restaurant_id", restaurantId)
     .eq("status", "delivered");
   if (range?.from) query = query.gte("delivered_at", range.from.toISOString());
@@ -122,5 +153,5 @@ export async function getDeliveredOrders(
     ascending: false,
   });
   if (error) throw error;
-  return (data ?? []) as EarningsRow[];
+  return (data ?? []) as unknown as EarningsRow[];
 }

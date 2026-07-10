@@ -25,7 +25,14 @@ export default async function VendorEarningsPage({
   const delivered = await getDeliveredOrders(restaurant.id, range);
   const rate = Number(restaurant.commission_rate);
 
-  const gross = delivered.reduce((s, o) => s + Number(o.subtotal), 0);
+  // A vendor's own promo code (voucher scoped to this restaurant) comes out of
+  // their food sales. Platform-wide (admin) codes don't.
+  const vendorFunded = (o: (typeof delivered)[number]) =>
+    o.vouchers?.restaurant_id ? Number(o.discount) : 0;
+  const foodSalesOf = (o: (typeof delivered)[number]) =>
+    Number(o.subtotal) - vendorFunded(o);
+
+  const gross = delivered.reduce((s, o) => s + foodSalesOf(o), 0);
   const commission = (gross * rate) / 100;
   const net = gross - commission;
 
@@ -89,7 +96,8 @@ export default async function VendorEarningsPage({
             </thead>
             <tbody>
               {delivered.map((o) => {
-                const rowNet = Number(o.subtotal) * (1 - rate / 100);
+                const foodSales = foodSalesOf(o);
+                const rowNet = foodSales * (1 - rate / 100);
                 return (
                   <tr key={o.id} className="border-t border-neutral-100">
                     <td className="px-4 py-2.5 font-mono text-xs text-neutral-500">
@@ -99,7 +107,7 @@ export default async function VendorEarningsPage({
                       {o.delivered_at ? formatDateTime(o.delivered_at) : "—"}
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      {formatPrice(o.subtotal)}
+                      {formatPrice(foodSales)}
                     </td>
                     <td className="px-4 py-2.5 text-right font-semibold">
                       {formatPrice(rowNet)}

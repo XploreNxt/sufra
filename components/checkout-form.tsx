@@ -69,9 +69,14 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   const total = Math.max(subtotal - discount, 0) + cart.delivery_fee;
 
   async function applyVoucher() {
+    if (!cart) return;
     setVoucherError(null);
     setApplying(true);
-    const result = await previewVoucher(voucherInput, subtotal);
+    const result = await previewVoucher(
+      voucherInput,
+      subtotal,
+      cart.restaurant_id
+    );
     setApplying(false);
     if (result.error || result.discount == null) {
       setVoucher(null);
