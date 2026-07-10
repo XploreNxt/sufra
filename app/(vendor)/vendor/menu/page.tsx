@@ -14,7 +14,7 @@ export default async function VendorMenuPage() {
 
   const [menu, bundles] = await Promise.all([
     getVendorMenu(restaurant.id),
-    getVendorBundles(restaurant.id),
+    getVendorBundles(restaurant.id).catch(() => []),
   ]);
   if (!menu) return null;
 
