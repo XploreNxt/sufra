@@ -126,11 +126,19 @@ export function RestaurantMenu({
             {cat.menu_items.map((item) => (
               <div
                 key={item.id}
-                className={`group flex items-start justify-between gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200/80 transition-all duration-300 hover:shadow-md hover:ring-emerald-200 ${
+                className={`group flex items-start gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200/80 transition-all duration-300 hover:shadow-md hover:ring-emerald-200 ${
                   item.is_available ? "" : "opacity-60 saturate-50"
                 }`}
               >
-                <div>
+                {item.image_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="h-20 w-20 shrink-0 rounded-xl object-cover ring-1 ring-stone-200 sm:h-24 sm:w-24"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
                   <h3 className="font-bold text-stone-900">
                     {item.name}
                     {!item.is_available && (
