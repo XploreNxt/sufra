@@ -66,6 +66,60 @@ export async function rejectRestaurantBranding(
   return {};
 }
 
+export async function approveRestaurantLocation(
+  restaurantId: string
+): Promise<ActionResult> {
+  const denied = await requireAdmin();
+  if (denied) return { error: denied };
+
+  const supabase = await createClient();
+  const { data: r } = await supabase
+    .from("restaurants")
+    .select("pending_lat, pending_lng")
+    .eq("id", restaurantId)
+    .maybeSingle();
+  if (!r || r.pending_lat == null || r.pending_lng == null) {
+    return { error: "No pending pin to approve" };
+  }
+
+  const { error } = await supabase
+    .from("restaurants")
+    .update({
+      lat: r.pending_lat,
+      lng: r.pending_lng,
+      pending_lat: null,
+      pending_lng: null,
+      location_rejection_reason: null,
+    })
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/menu");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function rejectRestaurantLocation(
+  restaurantId: string,
+  reason: string
+): Promise<ActionResult> {
+  const denied = await requireAdmin();
+  if (denied) return { error: denied };
+  if (!reason.trim()) return { error: "Please give a reason for the rejection" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("restaurants")
+    .update({
+      pending_lat: null,
+      pending_lng: null,
+      location_rejection_reason: reason.trim(),
+    })
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/menu");
+  return {};
+}
+
 export async function approveMenuItem(itemId: string): Promise<ActionResult> {
   const denied = await requireAdmin();
   if (denied) return { error: denied };

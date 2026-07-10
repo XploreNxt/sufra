@@ -1,15 +1,21 @@
-import { getPendingBranding, getPendingMenuItems } from "@/lib/db/admin";
+import {
+  getPendingBranding,
+  getPendingLocations,
+  getPendingMenuItems,
+} from "@/lib/db/admin";
 import { MenuApprovals } from "@/components/admin/menu-approvals";
 import { BrandingApprovals } from "@/components/admin/branding-approvals";
+import { LocationApprovals } from "@/components/admin/location-approvals";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminApprovalsPage() {
-  const [items, branding] = await Promise.all([
+  const [items, branding, locations] = await Promise.all([
     getPendingMenuItems(),
     getPendingBranding(),
+    getPendingLocations(),
   ]);
-  const total = items.length + branding.length;
+  const total = items.length + branding.length + locations.length;
 
   return (
     <main>
@@ -25,6 +31,8 @@ export default async function AdminApprovalsPage() {
         Menu items and restaurant branding wait here until you approve them.
         Rejecting asks for a reason the vendor will see.
       </p>
+
+      <LocationApprovals items={locations} />
 
       <BrandingApprovals items={branding} />
 

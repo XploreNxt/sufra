@@ -172,6 +172,30 @@ export async function getPendingBranding(): Promise<PendingBranding[]> {
   return (data ?? []) as PendingBranding[];
 }
 
+export interface PendingLocation {
+  id: string;
+  name: string;
+  address_text: string | null;
+  lat: number | null;
+  lng: number | null;
+  pending_lat: number;
+  pending_lng: number;
+  delivery_radius_km: number;
+}
+
+export async function getPendingLocations(): Promise<PendingLocation[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select(
+      "id, name, address_text, lat, lng, pending_lat, pending_lng, delivery_radius_km"
+    )
+    .not("pending_lat", "is", null)
+    .order("name");
+  if (error) throw error;
+  return (data ?? []) as PendingLocation[];
+}
+
 export interface AdminStats {
   ordersToday: number;
   gmvDelivered: number;

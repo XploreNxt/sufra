@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Restaurant } from "@/types";
 import { formatPrice } from "@/types";
+import { formatDistance } from "@/lib/geo";
 
 // Cover + emoji themed by cuisine so every card feels distinct.
 const CUISINE_THEMES: Array<[RegExp, string, string]> = [
@@ -92,6 +93,11 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
           <span className="rounded-full bg-stone-100 px-2.5 py-1 text-stone-600">
             Min {formatPrice(restaurant.min_order)}
           </span>
+          {restaurant.distance_km != null && (
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700">
+              📍 {formatDistance(restaurant.distance_km)}
+            </span>
+          )}
         </div>
       </div>
     </Link>

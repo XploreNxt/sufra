@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Bundle, Restaurant, RestaurantWithMenu } from "@/types";
+import { haversineKm, type CustomerLocation } from "@/lib/geo";
 
 /** Active offers/bundles for a restaurant's customer page. */
 export async function getRestaurantBundles(
@@ -39,18 +40,39 @@ export async function getRestaurantReviews(
   return (data ?? []) as RestaurantReview[];
 }
 
-/** Active restaurants for the home feed (RLS also hides non-active ones). */
-export async function getActiveRestaurants(): Promise<Restaurant[]> {
+/**
+ * Active restaurants for the home feed. Only restaurants with an approved
+ * pin (lat/lng) are discoverable, and — once we know the customer's
+ * location — only those whose delivery radius covers the customer. Each
+ * card gets a `distance_km` so the UI can show "X km away".
+ */
+export async function getActiveRestaurants(
+  loc?: CustomerLocation | null
+): Promise<Restaurant[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("restaurants")
     .select("*")
     .eq("status", "active")
+    .not("lat", "is", null)
+    .not("lng", "is", null)
     .order("is_open", { ascending: false })
     .order("rating_avg", { ascending: false, nullsFirst: false });
 
   if (error) throw error;
-  return (data ?? []) as Restaurant[];
+  const list = (data ?? []) as Restaurant[];
+  if (!loc) return list;
+
+  return list
+    .map((r) => ({
+      ...r,
+      distance_km: haversineKm(loc.lat, loc.lng, r.lat as number, r.lng as number),
+    }))
+    .filter((r) => (r.distance_km as number) <= Number(r.delivery_radius_km))
+    .sort((a, b) => {
+      if (a.is_open !== b.is_open) return a.is_open ? -1 : 1;
+      return (a.distance_km as number) - (b.distance_km as number);
+    });
 }
 
 /** One restaurant with its full menu tree (categories → items → modifiers). */

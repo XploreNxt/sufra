@@ -65,3 +65,57 @@ export async function submitRestaurantBranding(
   revalidatePath("/vendor/settings");
   return {};
 }
+
+/**
+ * Map pin — staged for admin approval. The live pin (lat/lng) keeps
+ * working for customers until the change is approved.
+ */
+export async function submitRestaurantPin(
+  restaurantId: string,
+  pin: { lat: number; lng: number }
+): Promise<ActionResult> {
+  const { supabase, ownerId } = await ownedRestaurant(restaurantId);
+  if (!ownerId) return { error: "Not your restaurant" };
+  if (
+    !Number.isFinite(pin.lat) ||
+    !Number.isFinite(pin.lng) ||
+    pin.lat < -90 ||
+    pin.lat > 90 ||
+    pin.lng < -180 ||
+    pin.lng > 180
+  ) {
+    return { error: "Please drop a valid pin on the map first" };
+  }
+
+  const { error } = await supabase
+    .from("restaurants")
+    .update({
+      pending_lat: pin.lat,
+      pending_lng: pin.lng,
+      location_rejection_reason: null,
+    })
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/vendor/settings");
+  return {};
+}
+
+/** Delivery radius (km) — saved instantly, no approval. */
+export async function updateDeliveryRadius(
+  restaurantId: string,
+  km: number
+): Promise<ActionResult> {
+  const { supabase, ownerId } = await ownedRestaurant(restaurantId);
+  if (!ownerId) return { error: "Not your restaurant" };
+  if (!Number.isFinite(km) || km < 1 || km > 50) {
+    return { error: "Radius must be between 1 and 50 km" };
+  }
+
+  const { error } = await supabase
+    .from("restaurants")
+    .update({ delivery_radius_km: km })
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/vendor/settings");
+  return {};
+}

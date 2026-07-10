@@ -69,6 +69,10 @@ export interface Restaurant {
   address_text: string | null;
   lat: number | null;
   lng: number | null;
+  pending_lat: number | null;
+  pending_lng: number | null;
+  location_rejection_reason: string | null;
+  delivery_radius_km: number;
   phone: string | null;
   commission_rate: number;
   min_order: number;
@@ -78,6 +82,8 @@ export interface Restaurant {
   is_open: boolean;
   rating_avg: number | null;
   created_at: string;
+  /** Injected client-side once the customer's location is known. */
+  distance_km?: number | null;
 }
 
 export interface Modifier {

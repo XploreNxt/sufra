@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import {
   getRestaurantBundles,
@@ -8,6 +9,12 @@ import {
 import { formatPrice } from "@/types";
 import type { DayKey } from "@/types";
 import { RestaurantMenu } from "@/components/restaurant-menu";
+import {
+  LOCATION_COOKIE,
+  parseLocationCookie,
+  haversineKm,
+  formatDistance,
+} from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +32,15 @@ export default async function RestaurantPage({
     getRestaurantReviews(id).catch(() => []),
     getRestaurantBundles(id).catch(() => []),
   ]);
+
+  const cookieStore = await cookies();
+  const loc = parseLocationCookie(cookieStore.get(LOCATION_COOKIE)?.value);
+  const distance =
+    loc && restaurant.lat != null && restaurant.lng != null
+      ? haversineKm(loc.lat, loc.lng, restaurant.lat, restaurant.lng)
+      : null;
+  const outOfRange =
+    distance != null && distance > Number(restaurant.delivery_radius_km);
 
   const today = restaurant.hours?.[DAY_KEYS[new Date().getDay()]];
   const hoursLabel = today
@@ -109,9 +125,25 @@ export default async function RestaurantPage({
                 🕒 {hoursLabel}
               </span>
             )}
+            {distance != null && !outOfRange && (
+              <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+                📍 {formatDistance(distance)} away
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {outOfRange && (
+        <div className="s-fade-up mt-4 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-900 ring-1 ring-amber-200">
+          <p className="font-bold">Outside this restaurant’s delivery area</p>
+          <p className="mt-0.5">
+            You’re {formatDistance(distance!)} away, but they only deliver within{" "}
+            {Number(restaurant.delivery_radius_km)} km. You can browse the menu,
+            but orders to your location will be declined at checkout.
+          </p>
+        </div>
+      )}
 
       <RestaurantMenu restaurant={restaurant} bundles={bundles} />
 
