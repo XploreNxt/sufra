@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart, lineTotal } from "@/lib/cart/cart-context";
+import { LocationSearch } from "@/components/location-search";
 import { formatPrice } from "@/types";
 import {
   createAddress,
@@ -273,6 +274,12 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
                 </button>
               </div>
             </div>
+            <LocationSearch
+              onPick={(lat, lng, labelText) => {
+                setCoords({ lat, lng });
+                if (!addressText.trim()) setAddressText(labelText);
+              }}
+            />
             <label className="block text-sm">
               <span className="font-medium text-neutral-700">
                 Complete address

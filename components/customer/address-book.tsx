@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MapPicker } from "@/components/map-picker";
+import { LocationSearch } from "@/components/location-search";
 import { DEFAULT_CENTER } from "@/lib/geo";
 import { createAddress } from "@/app/actions/orders";
 import {
@@ -160,6 +161,15 @@ function AddressForm({
             className={field}
           />
         </label>
+      </div>
+
+      <div className="mt-3">
+        <LocationSearch
+          onPick={(lat, lng, labelText) => {
+            setPos({ lat, lng });
+            if (!addressText.trim()) setAddressText(labelText);
+          }}
+        />
       </div>
 
       <MapPicker

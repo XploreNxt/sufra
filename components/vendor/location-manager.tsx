@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Restaurant } from "@/types";
 import { MapPicker } from "@/components/map-picker";
+import { LocationSearch } from "@/components/location-search";
 import { DEFAULT_CENTER } from "@/lib/geo";
 import { submitRestaurantPin, updateDeliveryRadius } from "@/app/actions/shop";
 
@@ -128,8 +129,18 @@ export function LocationManager({ restaurant: r }: { restaurant: Restaurant }) {
           {locating ? "Locating…" : "📍 Locate me"}
         </button>
         <span className="text-xs text-stone-400">
-          or drag the pin / tap the map
+          search, drag the pin, or tap the map
         </span>
+      </div>
+
+      <div className="mt-3">
+        <LocationSearch
+          placeholder="Search your shop area or landmark"
+          onPick={(lat, lng) => {
+            setPos({ lat, lng });
+            setMoved(true);
+          }}
+        />
       </div>
 
       <MapPicker
