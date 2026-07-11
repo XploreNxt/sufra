@@ -4,6 +4,7 @@ import { getSessionProfile } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileEditor } from "@/components/customer/profile-editor";
 import { PreferencesEditor } from "@/components/customer/preferences-editor";
+import { ReferralCard, type RewardVoucher } from "@/components/customer/referral-card";
 import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +14,22 @@ export default async function ProfilePage() {
   if (!profile) redirect("/login?next=/profile");
 
   const supabase = await createClient();
-  const [addresses, favorites, orders] = await Promise.all([
+  const [addresses, favorites, orders, rewardRows] = await Promise.all([
     supabase.from("addresses").select("id", { count: "exact", head: true }),
     supabase.from("favorites").select("id", { count: "exact", head: true }),
     supabase.from("orders").select("id", { count: "exact", head: true }),
+    supabase
+      .from("vouchers")
+      .select("code, value, min_order, discount_type, times_used, usage_limit")
+      .eq("user_id", profile.id)
+      .eq("is_active", true),
   ]);
+
+  const rewards = ((rewardRows.data ?? []) as RewardVoucher[]).filter(
+    (v) => v.usage_limit == null || v.times_used < v.usage_limit
+  );
+  const canApplyReferral =
+    profile.referred_by == null && (orders.count ?? 0) === 0;
 
   const links = [
     { href: "/profile/addresses", icon: "📍", label: "Saved addresses", count: addresses.count },
@@ -56,6 +68,11 @@ export default async function ProfilePage() {
       </div>
 
       <div className="mt-6 space-y-6">
+        <ReferralCard
+          code={profile.referral_code}
+          canApply={canApplyReferral}
+          rewards={rewards}
+        />
         <ProfileEditor profile={profile} />
         <PreferencesEditor profile={profile} />
       </div>

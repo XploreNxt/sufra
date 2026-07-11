@@ -48,6 +48,8 @@ export interface Profile {
   favorite_cuisines: string[];
   notify_order_updates: boolean;
   notify_promotions: boolean;
+  referral_code: string | null;
+  referred_by: string | null;
   created_at: string;
 }
 
