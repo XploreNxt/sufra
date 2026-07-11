@@ -16,6 +16,13 @@ export function haversineKm(
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+/** Delivery fee = Rs 50 base + Rs 20 per km. Mirrors the SQL in place_order. */
+export const DELIVERY_BASE_FEE = 50;
+export const DELIVERY_PER_KM = 20;
+export function deliveryFeeForKm(km: number): number {
+  return DELIVERY_BASE_FEE + Math.round(DELIVERY_PER_KM * Math.max(0, km));
+}
+
 /** Trim a long geocoded address to its most specific 1–2 parts. */
 export function shortLabel(label: string): string {
   const parts = (label ?? "")

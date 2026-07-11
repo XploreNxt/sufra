@@ -129,8 +129,8 @@ export async function updateDeliveryRadius(
 ): Promise<ActionResult> {
   const { supabase, ownerId } = await ownedRestaurant(restaurantId);
   if (!ownerId) return { error: "Not your restaurant" };
-  if (!Number.isFinite(km) || km < 1 || km > 50) {
-    return { error: "Radius must be between 1 and 50 km" };
+  if (!Number.isFinite(km) || km < 1 || km > 25) {
+    return { error: "Radius must be between 1 and 25 km" };
   }
 
   const { error } = await supabase

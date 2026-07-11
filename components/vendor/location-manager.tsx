@@ -85,7 +85,7 @@ export function LocationManager({ restaurant: r }: { restaurant: Restaurant }) {
   }
 
   const radiusNum = Number(radius);
-  const radiusValid = Number.isFinite(radiusNum) && radiusNum >= 1 && radiusNum <= 50;
+  const radiusValid = Number.isFinite(radiusNum) && radiusNum >= 1 && radiusNum <= 25;
 
   return (
     <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
@@ -180,14 +180,15 @@ export function LocationManager({ restaurant: r }: { restaurant: Restaurant }) {
       <div className="mt-6 border-t border-stone-100 pt-5">
         <h3 className="text-sm font-bold text-stone-900">Delivery radius</h3>
         <p className="mt-1 text-xs text-stone-500">
-          How far you deliver from your pin. Saved instantly.
+          How far you deliver from your pin (max 25 km). Saved instantly.
+          Customers pay a distance-based delivery fee (Rs 50 + Rs 20/km).
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <input
               type="number"
               min={1}
-              max={50}
+              max={25}
               step={0.5}
               value={radius}
               onChange={(e) => {

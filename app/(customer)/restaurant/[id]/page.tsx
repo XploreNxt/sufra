@@ -17,6 +17,8 @@ import {
   parseLocationCookie,
   haversineKm,
   formatDistance,
+  deliveryFeeForKm,
+  DELIVERY_BASE_FEE,
 } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
@@ -137,7 +139,10 @@ export default async function RestaurantPage({
               ⏱ ~{restaurant.default_prep_minutes} min prep
             </span>
             <span className="rounded-full bg-stone-100 px-3 py-1.5 text-stone-600">
-              🛵 Delivery {formatPrice(restaurant.delivery_fee)}
+              🛵 Delivery{" "}
+              {distance != null
+                ? `~${formatPrice(deliveryFeeForKm(distance))}`
+                : `from ${formatPrice(DELIVERY_BASE_FEE)}`}
             </span>
             <span className="rounded-full bg-stone-100 px-3 py-1.5 text-stone-600">
               Min order {formatPrice(restaurant.min_order)}

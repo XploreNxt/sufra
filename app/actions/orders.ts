@@ -33,6 +33,20 @@ export async function placeOrder(
   return { orderId: data as string };
 }
 
+/** Distance-based delivery fee for a restaurant → address, shown at checkout. */
+export async function previewDeliveryFee(
+  restaurantId: string,
+  addressId: string
+): Promise<{ fee?: number; error?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("preview_delivery_fee", {
+    p_restaurant_id: restaurantId,
+    p_address_id: addressId,
+  });
+  if (error) return { error: error.message };
+  return { fee: Number(data) };
+}
+
 export async function previewVoucher(
   code: string,
   subtotal: number,

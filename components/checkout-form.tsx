@@ -10,6 +10,7 @@ import {
   createAddress,
   placeOrder,
   previewVoucher,
+  previewDeliveryFee,
 } from "@/app/actions/orders";
 
 export interface Address {
@@ -51,6 +52,23 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
+  // Live distance-based delivery fee for the selected address.
+  const [deliveryFee, setDeliveryFee] = useState<number | null>(null);
+  useEffect(() => {
+    if (!cart || !selectedId) {
+      setDeliveryFee(null);
+      return;
+    }
+    let active = true;
+    previewDeliveryFee(cart.restaurant_id, selectedId).then((r) => {
+      if (active && typeof r.fee === "number") setDeliveryFee(r.fee);
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart?.restaurant_id, selectedId]);
+
   if (!hydrated) return null;
 
   if (placed) {
@@ -79,7 +97,8 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   }
 
   const discount = voucher?.discount ?? 0;
-  const total = Math.max(subtotal - discount, 0) + cart.delivery_fee;
+  const effectiveDelivery = deliveryFee ?? cart.delivery_fee;
+  const total = Math.max(subtotal - discount, 0) + effectiveDelivery;
 
   async function applyVoucher() {
     if (!cart) return;
@@ -434,7 +453,7 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
           )}
           <div className="flex justify-between text-neutral-600">
             <dt>Delivery fee</dt>
-            <dd>{formatPrice(cart.delivery_fee)}</dd>
+            <dd>{formatPrice(effectiveDelivery)}</dd>
           </div>
           <div className="flex justify-between text-base font-bold text-neutral-900">
             <dt>Total (COD)</dt>

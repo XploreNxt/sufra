@@ -27,7 +27,6 @@ export default function CartPage() {
   }
 
   const belowMin = subtotal < cart.min_order;
-  const total = subtotal + cart.delivery_fee;
 
   return (
     <main className="mx-auto max-w-2xl">
@@ -109,13 +108,16 @@ export default function CartPage() {
             <dt>Subtotal</dt>
             <dd>{formatPrice(subtotal)}</dd>
           </div>
-          <div className="flex justify-between text-neutral-600">
+          <div className="flex justify-between text-neutral-500">
             <dt>Delivery fee</dt>
-            <dd>{formatPrice(cart.delivery_fee)}</dd>
+            <dd>Calculated at checkout</dd>
           </div>
           <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-bold text-neutral-900">
             <dt>Total</dt>
-            <dd>{formatPrice(total)}</dd>
+            <dd>
+              {formatPrice(subtotal)}
+              <span className="text-xs font-normal text-neutral-400"> + delivery</span>
+            </dd>
           </div>
         </dl>
 
