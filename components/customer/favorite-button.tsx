@@ -1,19 +1,30 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toggleFavorite } from "@/app/actions/favorites";
 
 export function FavoriteButton({
   restaurantId,
   initial,
+  loggedIn = true,
 }: {
   restaurantId: string;
   initial: boolean;
+  loggedIn?: boolean;
 }) {
+  const router = useRouter();
   const [fav, setFav] = useState(initial);
   const [pending, start] = useTransition();
 
   function toggle() {
+    // Guests: send them to sign in, then back to this restaurant.
+    if (!loggedIn) {
+      router.push(
+        `/login?next=${encodeURIComponent(`/restaurant/${restaurantId}`)}`
+      );
+      return;
+    }
     // Optimistic flip; revert if the server disagrees.
     const next = !fav;
     setFav(next);
