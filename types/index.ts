@@ -113,6 +113,8 @@ export interface Restaurant {
   default_prep_minutes: number;
   status: "pending" | "active" | "suspended";
   is_open: boolean;
+  checked_in_at: string | null;
+  open_until: string | null;
   rating_avg: number | null;
   created_at: string;
   /** Injected client-side once the customer's location is known. */

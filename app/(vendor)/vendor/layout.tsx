@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/auth/session";
 import { getActiveRestaurant } from "@/lib/db/vendor";
 import { LogoutButton } from "@/components/logout-button";
-import { OpenToggle } from "@/components/vendor/open-toggle";
+import { CheckInControl } from "@/components/vendor/check-in-control";
 import { SufraLogo } from "@/components/brand";
 
 export default async function VendorLayout({
@@ -45,9 +45,11 @@ export default async function VendorLayout({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <OpenToggle
+            <CheckInControl
               restaurantId={restaurant.id}
               isOpen={restaurant.is_open}
+              openUntil={restaurant.open_until}
+              hours={restaurant.hours}
             />
             <LogoutButton />
           </div>

@@ -31,6 +31,8 @@ const ACTIVE_RESTAURANT_COOKIE = "active_restaurant";
  */
 export async function getVendorRestaurants(): Promise<Restaurant[]> {
   const supabase = await createClient();
+  // Reflect auto-close in the vendor's own view.
+  await supabase.rpc("close_expired_shops");
   const {
     data: { user },
   } = await supabase.auth.getUser();

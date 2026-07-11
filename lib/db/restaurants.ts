@@ -51,6 +51,8 @@ export async function getActiveRestaurants(
   favoriteCuisines: string[] = []
 ): Promise<Restaurant[]> {
   const supabase = await createClient();
+  // Auto-close any shops whose check-in window has passed before listing.
+  await supabase.rpc("close_expired_shops");
   const { data, error } = await supabase
     .from("restaurants")
     .select("*")

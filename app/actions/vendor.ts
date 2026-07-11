@@ -70,6 +70,30 @@ export async function updateOrderStatus(
   return {};
 }
 
+/**
+ * Vendor check-in: opens the shop for business now. open_until (today's
+ * close time, computed client-side in the vendor's timezone) drives the
+ * automatic close — null means no auto-close (manual only).
+ */
+export async function checkInRestaurant(
+  restaurantId: string,
+  openUntil: string | null
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("restaurants")
+    .update({
+      is_open: true,
+      checked_in_at: new Date().toISOString(),
+      open_until: openUntil,
+    })
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/vendor", "layout");
+  return {};
+}
+
+/** Manual open/close. Closing also clears the auto-close timer. */
 export async function setRestaurantOpen(
   restaurantId: string,
   isOpen: boolean
@@ -77,7 +101,7 @@ export async function setRestaurantOpen(
   const supabase = await createClient();
   const { error } = await supabase
     .from("restaurants")
-    .update({ is_open: isOpen })
+    .update(isOpen ? { is_open: true } : { is_open: false, open_until: null })
     .eq("id", restaurantId);
   if (error) return { error: error.message };
   revalidatePath("/vendor", "layout");
