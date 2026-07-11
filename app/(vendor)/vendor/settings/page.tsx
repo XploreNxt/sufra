@@ -1,6 +1,7 @@
 import { getActiveRestaurant } from "@/lib/db/vendor";
 import { SettingsForm } from "@/components/vendor/settings-form";
 import { LocationManager } from "@/components/vendor/location-manager";
+import { ShopProfile } from "@/components/vendor/shop-profile";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function VendorSettingsPage() {
       </p>
       <div className="space-y-6">
         <LocationManager restaurant={restaurant} />
+        <ShopProfile restaurant={restaurant} />
         <SettingsForm restaurant={restaurant} />
       </div>
     </main>

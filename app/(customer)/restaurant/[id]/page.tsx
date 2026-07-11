@@ -167,7 +167,11 @@ export default async function RestaurantPage({
         </div>
       )}
 
-      <RestaurantMenu restaurant={restaurant} bundles={bundles} />
+      <RestaurantMenu
+        restaurant={restaurant}
+        bundles={bundles}
+        defaultSpice={profile?.default_spice ?? null}
+      />
 
       {reviews.length > 0 && (
         <section className="mt-12">

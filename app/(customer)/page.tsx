@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { getActiveRestaurants } from "@/lib/db/restaurants";
+import { getSessionProfile } from "@/lib/auth/session";
 import { RestaurantFeed } from "@/components/restaurant-feed";
 import { LocationGate } from "@/components/location-gate";
 import { LocationBar } from "@/components/location-bar";
@@ -19,7 +20,11 @@ export default async function CustomerHome() {
     );
   }
 
-  const restaurants = await getActiveRestaurants(loc);
+  const profile = await getSessionProfile();
+  const restaurants = await getActiveRestaurants(
+    loc,
+    profile?.favorite_cuisines ?? []
+  );
 
   return (
     <main>

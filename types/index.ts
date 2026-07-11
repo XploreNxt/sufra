@@ -12,12 +12,42 @@ export type OrderStatus =
   | "rejected"
   | "cancelled";
 
+export type SpiceLevel = "mild" | "medium" | "hot";
+
+export const SPICE_LEVELS: Array<{ key: SpiceLevel; label: string }> = [
+  { key: "mild", label: "Mild" },
+  { key: "medium", label: "Medium" },
+  { key: "hot", label: "Hot 🌶️" },
+];
+
+export const CUISINE_OPTIONS = [
+  "Biryani",
+  "Desi",
+  "Karahi",
+  "BBQ",
+  "Nihari",
+  "Fast Food",
+  "Burgers",
+  "Pizza",
+  "Chinese",
+  "Seafood",
+  "Shawarma",
+  "Dessert",
+  "Bakery",
+  "Chai",
+  "Continental",
+];
+
 export interface Profile {
   id: string;
   phone: string | null;
   email: string | null;
   full_name: string | null;
   role: UserRole;
+  default_spice: SpiceLevel | null;
+  favorite_cuisines: string[];
+  notify_order_updates: boolean;
+  notify_promotions: boolean;
   created_at: string;
 }
 
@@ -60,6 +90,7 @@ export interface Restaurant {
   name: string;
   description: string | null;
   cuisine_types: string[];
+  spice_levels: SpiceLevel[];
   logo_url: string | null;
   cover_url: string | null;
   pending_logo_url: string | null;

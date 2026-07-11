@@ -3,16 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Bundle, MenuItem, RestaurantWithMenu } from "@/types";
-import { formatPrice } from "@/types";
+import { formatPrice, SPICE_LEVELS } from "@/types";
 import { useCart, type CartLine, type CartModifier } from "@/lib/cart/cart-context";
 
 export function RestaurantMenu({
   restaurant,
   bundles = [],
+  defaultSpice = null,
 }: {
   restaurant: RestaurantWithMenu;
   bundles?: Bundle[];
+  defaultSpice?: string | null;
 }) {
+  const spiceLevels = restaurant.spice_levels ?? [];
   const { cart, itemCount, subtotal, addLine } = useCart();
   const [picking, setPicking] = useState<MenuItem | null>(null);
 
@@ -33,7 +36,13 @@ export function RestaurantMenu({
     }
   }
 
-  function add(item: MenuItem, modifiers: CartModifier[], quantity: number, note?: string) {
+  function add(
+    item: MenuItem,
+    modifiers: CartModifier[],
+    quantity: number,
+    note?: string,
+    spice?: string
+  ) {
     addToCart({
       menu_item_id: item.id,
       name: item.name,
@@ -41,6 +50,7 @@ export function RestaurantMenu({
       quantity,
       modifiers,
       special_instructions: note,
+      spice_level: spice,
     });
   }
 
@@ -166,7 +176,7 @@ export function RestaurantMenu({
                   {item.is_available && restaurant.is_open && (
                     <button
                       onClick={() =>
-                        item.modifier_groups.length > 0
+                        item.modifier_groups.length > 0 || spiceLevels.length > 0
                           ? setPicking(item)
                           : add(item, [], 1)
                       }
@@ -191,9 +201,11 @@ export function RestaurantMenu({
       {picking && (
         <ItemOptionsModal
           item={picking}
+          spiceLevels={spiceLevels}
+          defaultSpice={defaultSpice}
           onClose={() => setPicking(null)}
-          onAdd={(mods, qty, note) => {
-            add(picking, mods, qty, note);
+          onAdd={(mods, qty, note, spice) => {
+            add(picking, mods, qty, note, spice);
             setPicking(null);
           }}
         />
@@ -219,16 +231,30 @@ export function RestaurantMenu({
 
 function ItemOptionsModal({
   item,
+  spiceLevels,
+  defaultSpice,
   onClose,
   onAdd,
 }: {
   item: MenuItem;
+  spiceLevels: string[];
+  defaultSpice: string | null;
   onClose: () => void;
-  onAdd: (modifiers: CartModifier[], quantity: number, note?: string) => void;
+  onAdd: (
+    modifiers: CartModifier[],
+    quantity: number,
+    note?: string,
+    spice?: string
+  ) => void;
 }) {
   const [selected, setSelected] = useState<Record<string, string[]>>({});
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
+  const [spice, setSpice] = useState<string>(
+    defaultSpice && spiceLevels.includes(defaultSpice)
+      ? defaultSpice
+      : spiceLevels[0] ?? ""
+  );
   const [error, setError] = useState<string | null>(null);
 
   function toggle(groupId: string, modId: string, max: number, single: boolean) {
@@ -257,7 +283,7 @@ function ItemOptionsModal({
         return { id: m.id, name: m.name, price_delta: Number(m.price_delta) };
       })
     );
-    onAdd(mods, quantity, note.trim() || undefined);
+    onAdd(mods, quantity, note.trim() || undefined, spice || undefined);
   }
 
   const modsTotal = item.modifier_groups.flatMap((g) =>
@@ -295,6 +321,30 @@ function ItemOptionsModal({
           </button>
         </div>
 
+        {spiceLevels.length > 0 && (
+          <fieldset className="mt-5">
+            <legend className="text-sm font-bold text-stone-800">
+              Spice level{" "}
+              <span className="font-medium text-stone-400">(required)</span>
+            </legend>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SPICE_LEVELS.filter((s) => spiceLevels.includes(s.key)).map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => setSpice(s.key)}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all ${
+                    spice === s.key
+                      ? "bg-emerald-600 text-white"
+                      : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
         {item.modifier_groups.map((g) => {
           const single = g.max_select <= 1;
           return (

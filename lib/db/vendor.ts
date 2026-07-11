@@ -75,6 +75,7 @@ export interface VendorOrder {
     name_snapshot: string;
     quantity: number;
     special_instructions: string | null;
+    spice_level: string | null;
     order_item_modifiers: Array<{ id: string; name_snapshot: string }>;
   }>;
 }
@@ -88,7 +89,7 @@ export async function getVendorOrders(
     .select(
       `id, status, subtotal, delivery_fee, total, payment_method,
        placed_at, accepted_at, ready_at, acknowledged_at,
-       order_items(id, name_snapshot, quantity, special_instructions,
+       order_items(id, name_snapshot, quantity, special_instructions, spice_level,
          order_item_modifiers(id, name_snapshot))`
     )
     .eq("restaurant_id", restaurantId)

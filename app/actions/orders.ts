@@ -11,6 +11,7 @@ export interface PlaceOrderInput {
     quantity: number;
     modifier_ids: string[];
     special_instructions?: string;
+    spice_level?: string;
   }>;
   bundles?: Array<{ bundle_id: string; quantity: number }>;
 }

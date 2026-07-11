@@ -56,6 +56,11 @@ export function VendorOrderCard({ order }: { order: VendorOrder }) {
             <span className="font-medium">
               {item.quantity}× {item.name_snapshot}
             </span>
+            {item.spice_level && (
+              <span className="ml-2 rounded bg-orange-100 px-1.5 py-0.5 text-[11px] font-bold uppercase text-orange-700">
+                🌶 {item.spice_level}
+              </span>
+            )}
             {item.order_item_modifiers.length > 0 && (
               <span className="text-neutral-500">
                 {" "}

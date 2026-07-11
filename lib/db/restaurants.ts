@@ -47,7 +47,8 @@ export async function getRestaurantReviews(
  * card gets a `distance_km` so the UI can show "X km away".
  */
 export async function getActiveRestaurants(
-  loc?: CustomerLocation | null
+  loc?: CustomerLocation | null,
+  favoriteCuisines: string[] = []
 ): Promise<Restaurant[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -60,19 +61,30 @@ export async function getActiveRestaurants(
     .order("rating_avg", { ascending: false, nullsFirst: false });
 
   if (error) throw error;
-  const list = (data ?? []) as Restaurant[];
-  if (!loc) return list;
+  let list = (data ?? []) as Restaurant[];
 
-  return list
-    .map((r) => ({
-      ...r,
-      distance_km: haversineKm(loc.lat, loc.lng, r.lat as number, r.lng as number),
-    }))
-    .filter((r) => (r.distance_km as number) <= Number(r.delivery_radius_km))
-    .sort((a, b) => {
-      if (a.is_open !== b.is_open) return a.is_open ? -1 : 1;
-      return (a.distance_km as number) - (b.distance_km as number);
-    });
+  if (loc) {
+    list = list
+      .map((r) => ({
+        ...r,
+        distance_km: haversineKm(loc.lat, loc.lng, r.lat as number, r.lng as number),
+      }))
+      .filter((r) => (r.distance_km as number) <= Number(r.delivery_radius_km));
+  }
+
+  // Boost the customer's favourite cuisines to the top (within open/distance).
+  const favSet = new Set(favoriteCuisines.map((c) => c.toLowerCase()));
+  const isFav = (r: Restaurant) =>
+    favSet.size > 0 && r.cuisine_types.some((c) => favSet.has(c.toLowerCase()));
+
+  return list.sort((a, b) => {
+    if (a.is_open !== b.is_open) return a.is_open ? -1 : 1;
+    const fa = isFav(a);
+    const fb = isFav(b);
+    if (fa !== fb) return fa ? -1 : 1;
+    if (loc) return (a.distance_km as number) - (b.distance_km as number);
+    return 0;
+  });
 }
 
 /** One restaurant with its full menu tree (categories → items → modifiers). */

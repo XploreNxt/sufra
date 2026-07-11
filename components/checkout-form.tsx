@@ -192,6 +192,7 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
         quantity: l.quantity,
         modifier_ids: l.modifiers.map((m) => m.id),
         special_instructions: l.special_instructions,
+        spice_level: l.spice_level,
       })),
       bundles: bundleLines.map((l) => ({
         bundle_id: l.bundle_id as string,

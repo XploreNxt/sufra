@@ -36,6 +36,38 @@ export async function updateProfile(input: {
   return {};
 }
 
+/** Customer preferences: default spice, favourite cuisines, notifications. */
+export async function updatePreferences(input: {
+  default_spice: string | null;
+  favorite_cuisines: string[];
+  notify_order_updates: boolean;
+  notify_promotions: boolean;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in" };
+
+  const spice =
+    input.default_spice && ["mild", "medium", "hot"].includes(input.default_spice)
+      ? input.default_spice
+      : null;
+
+  const { error } = await supabase
+    .from("users")
+    .update({
+      default_spice: spice,
+      favorite_cuisines: input.favorite_cuisines,
+      notify_order_updates: input.notify_order_updates,
+      notify_promotions: input.notify_promotions,
+    })
+    .eq("id", user.id);
+  if (error) return { error: error.message };
+  revalidatePath("/profile");
+  return {};
+}
+
 /**
  * Step 1 of a password change: email the account a 6-digit verification
  * code (Supabase reauthentication). No password is changed yet.

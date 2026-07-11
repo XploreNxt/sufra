@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileEditor } from "@/components/customer/profile-editor";
+import { PreferencesEditor } from "@/components/customer/preferences-editor";
 import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
@@ -54,8 +55,9 @@ export default async function ProfilePage() {
         ))}
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-6">
         <ProfileEditor profile={profile} />
+        <PreferencesEditor profile={profile} />
       </div>
 
       <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">

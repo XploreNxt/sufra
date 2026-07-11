@@ -100,6 +100,28 @@ export async function submitRestaurantPin(
   return {};
 }
 
+/** Cuisines + spice levels the shop serves — saved instantly. */
+export async function updateShopProfile(
+  restaurantId: string,
+  input: { cuisine_types: string[]; spice_levels: string[] }
+): Promise<ActionResult> {
+  const { supabase, ownerId } = await ownedRestaurant(restaurantId);
+  if (!ownerId) return { error: "Not your restaurant" };
+
+  const spice = input.spice_levels.filter((s) =>
+    ["mild", "medium", "hot"].includes(s)
+  );
+  const cuisines = input.cuisine_types.map((c) => c.trim()).filter(Boolean);
+
+  const { error } = await supabase
+    .from("restaurants")
+    .update({ cuisine_types: cuisines, spice_levels: spice })
+    .eq("id", restaurantId);
+  if (error) return { error: error.message };
+  revalidatePath("/vendor/settings");
+  return {};
+}
+
 /** Delivery radius (km) — saved instantly, no approval. */
 export async function updateDeliveryRadius(
   restaurantId: string,

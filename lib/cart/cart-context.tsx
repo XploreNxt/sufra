@@ -24,6 +24,7 @@ export interface CartLine {
   quantity: number;
   modifiers: CartModifier[]; // for bundles: the included items (price 0)
   special_instructions?: string;
+  spice_level?: string; // chosen heat, when the kitchen offers it
 }
 
 export interface Cart {
