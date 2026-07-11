@@ -36,14 +36,38 @@ export async function updateProfile(input: {
   return {};
 }
 
-/** Change the account password. */
-export async function changePassword(
-  newPassword: string
+/**
+ * Step 1 of a password change: email the account a 6-digit verification
+ * code (Supabase reauthentication). No password is changed yet.
+ */
+export async function requestPasswordChangeOtp(): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in" };
+  const { error } = await supabase.auth.reauthenticate();
+  if (error) return { error: error.message };
+  return {};
+}
+
+/**
+ * Step 2: verify the emailed code (nonce) and set the new password in one
+ * call — updateUser rejects the change if the code is wrong or expired.
+ */
+export async function changePasswordWithOtp(
+  newPassword: string,
+  code: string
 ): Promise<ActionResult> {
   if (newPassword.length < 8)
     return { error: "Password must be at least 8 characters" };
+  if (!/^\d{6}$/.test(code.trim()))
+    return { error: "Enter the 6-digit code from your email" };
   const supabase = await createClient();
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+    nonce: code.trim(),
+  });
   if (error) return { error: error.message };
   return {};
 }
