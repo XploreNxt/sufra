@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { acknowledgeOrders } from "@/app/actions/vendor";
+import { updateOrderStatus } from "@/app/actions/vendor";
 import { formatPrice } from "@/types";
 import { formatDateTime } from "@/lib/datetime";
 
@@ -34,7 +34,6 @@ function chime() {
   const c = getCtx();
   if (!c || c.state !== "running") return; // blocked until a user gesture
   const t0 = c.currentTime;
-  // A friendly two-note "ding-dong".
   ([[880, 0], [660, 0.2]] as const).forEach(([freq, at]) => {
     const osc = c.createOscillator();
     const gain = c.createGain();
@@ -55,7 +54,7 @@ export function NewOrderAlert({ orders }: { orders: NewOrder[] }) {
   const [muted, setMuted] = useState(false);
   const active = orders.length > 0;
 
-  // Ring on a loop while any order is unacknowledged.
+  // Ring on a loop while any order is still pending (unconfirmed).
   useEffect(() => {
     if (!active || muted) return;
     chime();
@@ -65,9 +64,9 @@ export function NewOrderAlert({ orders }: { orders: NewOrder[] }) {
 
   if (!active) return null;
 
-  function ack(ids: string[]) {
+  function decide(id: string, to: "accepted" | "rejected") {
     start(async () => {
-      await acknowledgeOrders(ids);
+      await updateOrderStatus(id, to);
       router.refresh();
     });
   }
@@ -82,7 +81,7 @@ export function NewOrderAlert({ orders }: { orders: NewOrder[] }) {
               {orders.length} new {orders.length === 1 ? "order" : "orders"}!
             </h2>
             <p className="text-sm text-stone-500">
-              Confirmed and waiting — acknowledge to silence the alarm.
+              Accept to confirm — the alarm stops once every order is handled.
             </p>
           </div>
           <button
@@ -95,7 +94,7 @@ export function NewOrderAlert({ orders }: { orders: NewOrder[] }) {
           </button>
         </div>
 
-        <ul className="mt-4 max-h-64 space-y-2 overflow-y-auto">
+        <ul className="mt-4 max-h-72 space-y-2 overflow-y-auto">
           {orders.map((o) => (
             <li
               key={o.id}
@@ -109,26 +108,25 @@ export function NewOrderAlert({ orders }: { orders: NewOrder[] }) {
                   {formatDateTime(o.placed_at)} · {formatPrice(o.total)}
                 </p>
               </div>
-              <button
-                onClick={() => ack([o.id])}
-                disabled={pending}
-                className="shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-500 active:scale-95 disabled:opacity-50"
-              >
-                Acknowledge
-              </button>
+              <div className="flex shrink-0 gap-2">
+                <button
+                  onClick={() => decide(o.id, "accepted")}
+                  disabled={pending}
+                  className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-500 active:scale-95 disabled:opacity-50"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => decide(o.id, "rejected")}
+                  disabled={pending}
+                  className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                >
+                  Reject
+                </button>
+              </div>
             </li>
           ))}
         </ul>
-
-        {orders.length > 1 && (
-          <button
-            onClick={() => ack(orders.map((o) => o.id))}
-            disabled={pending}
-            className="mt-4 w-full rounded-xl bg-stone-900 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-stone-800 active:scale-95 disabled:opacity-50"
-          >
-            {pending ? "…" : "Acknowledge all"}
-          </button>
-        )}
       </div>
     </div>
   );
