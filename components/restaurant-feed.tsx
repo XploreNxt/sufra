@@ -31,8 +31,8 @@ export function RestaurantFeed({ restaurants }: { restaurants: Restaurant[] }) {
           The dastarkhwan is set.
         </h1>
         <p className="mt-2 max-w-sm text-sm font-medium text-emerald-100">
-          {restaurants.length} kitchens delivering near you — cash on delivery,
-          tracked live.
+          {restaurants.length} {restaurants.length === 1 ? "kitchen" : "kitchens"}{" "}
+          delivering near you — cash on delivery, tracked live.
         </p>
 
         <div className="relative mt-6 max-w-md">

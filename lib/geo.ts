@@ -16,6 +16,16 @@ export function haversineKm(
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+/** Trim a long geocoded address to its most specific 1–2 parts. */
+export function shortLabel(label: string): string {
+  const parts = (label ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return "your pin";
+  return parts.slice(0, 2).join(", ");
+}
+
 /** "1.2 km" / "850 m" — human-friendly distance label. */
 export function formatDistance(km: number): string {
   if (km < 1) return `${Math.round(km * 1000)} m`;

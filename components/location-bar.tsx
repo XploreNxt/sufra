@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clearCustomerLocation } from "@/app/actions/location";
+import { shortLabel } from "@/lib/geo";
 
 export function LocationBar({ label }: { label: string }) {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function LocationBar({ label }: { label: string }) {
     <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-stone-200">
       <span className="min-w-0 truncate text-sm text-stone-700">
         📍 Delivering to{" "}
-        <span className="font-semibold">{label || "your pin"}</span>
+        <span className="font-semibold">{shortLabel(label)}</span>
       </span>
       <button
         onClick={change}
