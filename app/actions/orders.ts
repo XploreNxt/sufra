@@ -64,6 +64,94 @@ export async function submitReview(input: {
   return {};
 }
 
+export interface ReorderLine {
+  kind: "item";
+  menu_item_id: string;
+  name: string;
+  unit_price: number;
+  quantity: number;
+  modifiers: [];
+}
+
+/**
+ * Rebuild a cart from a past order using the *current* menu (live prices,
+ * only still-available items). Item customisations aren't reconstructed
+ * (modifier ids aren't snapshotted), so the customer re-picks those.
+ */
+export async function getReorderCart(orderId: string): Promise<{
+  restaurant?: { id: string; name: string; delivery_fee: number; min_order: number };
+  lines?: ReorderLine[];
+  error?: string;
+}> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in" };
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select(
+      `restaurants(id, name, delivery_fee, min_order, status),
+       order_items(menu_item_id, quantity)`
+    )
+    .eq("id", orderId)
+    .eq("customer_id", user.id)
+    .maybeSingle();
+  if (!order) return { error: "Order not found" };
+
+  const r = order.restaurants as unknown as {
+    id: string;
+    name: string;
+    delivery_fee: number;
+    min_order: number;
+    status: string;
+  } | null;
+  if (!r || r.status !== "active")
+    return { error: "This restaurant isn't available right now" };
+
+  const items = (order.order_items as Array<{ menu_item_id: string | null; quantity: number }>)
+    .filter((i) => i.menu_item_id);
+  if (items.length === 0) return { error: "Nothing here can be reordered" };
+
+  const { data: current } = await supabase
+    .from("menu_items")
+    .select("id, name, price, is_available")
+    .in(
+      "id",
+      items.map((i) => i.menu_item_id as string)
+    );
+  const byId = new Map(
+    (current ?? []).map((m) => [m.id as string, m])
+  );
+
+  const lines: ReorderLine[] = [];
+  for (const i of items) {
+    const cur = byId.get(i.menu_item_id as string);
+    if (!cur || !cur.is_available) continue;
+    lines.push({
+      kind: "item",
+      menu_item_id: cur.id as string,
+      name: cur.name as string,
+      unit_price: Number(cur.price),
+      quantity: i.quantity,
+      modifiers: [],
+    });
+  }
+  if (lines.length === 0)
+    return { error: "Those items aren't available anymore" };
+
+  return {
+    restaurant: {
+      id: r.id,
+      name: r.name,
+      delivery_fee: Number(r.delivery_fee),
+      min_order: Number(r.min_order),
+    },
+    lines,
+  };
+}
+
 export interface NewAddressInput {
   label: string;
   address_text: string;

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getSessionProfile } from "@/lib/auth/session";
-import { LogoutButton } from "@/components/logout-button";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { CartHeaderLink } from "@/components/cart-header-link";
 import { SufraLogo } from "@/components/brand";
@@ -29,7 +28,14 @@ export default async function CustomerLayout({
               )}
               <CartHeaderLink />
               {profile ? (
-                <LogoutButton />
+                <Link
+                  href="/profile"
+                  aria-label="Your account"
+                  title="Your account"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-sm font-black text-white transition-transform hover:scale-105 active:scale-95"
+                >
+                  {(profile.full_name ?? profile.email ?? "?").charAt(0).toUpperCase()}
+                </Link>
               ) : (
                 <Link
                   href="/login"

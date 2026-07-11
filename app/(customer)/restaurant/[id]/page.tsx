@@ -6,9 +6,12 @@ import {
   getRestaurantReviews,
   getRestaurantWithMenu,
 } from "@/lib/db/restaurants";
+import { getSessionProfile } from "@/lib/auth/session";
+import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/types";
 import type { DayKey } from "@/types";
 import { RestaurantMenu } from "@/components/restaurant-menu";
+import { FavoriteButton } from "@/components/customer/favorite-button";
 import {
   LOCATION_COOKIE,
   parseLocationCookie,
@@ -32,6 +35,18 @@ export default async function RestaurantPage({
     getRestaurantReviews(id).catch(() => []),
     getRestaurantBundles(id).catch(() => []),
   ]);
+
+  const profile = await getSessionProfile();
+  let isFavorited = false;
+  if (profile) {
+    const supabase = await createClient();
+    const { data: fav } = await supabase
+      .from("favorites")
+      .select("id")
+      .eq("restaurant_id", id)
+      .maybeSingle();
+    isFavorited = !!fav;
+  }
 
   const cookieStore = await cookies();
   const loc = parseLocationCookie(cookieStore.get(LOCATION_COOKIE)?.value);
@@ -95,15 +110,20 @@ export default async function RestaurantPage({
                 )}
               </div>
             </div>
-            {restaurant.is_open ? (
-              <span className="flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-bold text-emerald-800">
-                <span className="s-live-dot text-emerald-500" /> Open now
-              </span>
-            ) : (
-              <span className="rounded-full bg-stone-200 px-4 py-1.5 text-sm font-bold text-stone-600">
-                Closed
-              </span>
-            )}
+            <div className="flex flex-col items-end gap-2">
+              {restaurant.is_open ? (
+                <span className="flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-bold text-emerald-800">
+                  <span className="s-live-dot text-emerald-500" /> Open now
+                </span>
+              ) : (
+                <span className="rounded-full bg-stone-200 px-4 py-1.5 text-sm font-bold text-stone-600">
+                  Closed
+                </span>
+              )}
+              {profile && (
+                <FavoriteButton restaurantId={restaurant.id} initial={isFavorited} />
+              )}
+            </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
             {restaurant.rating_avg != null && (

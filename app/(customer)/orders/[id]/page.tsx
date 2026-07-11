@@ -7,6 +7,7 @@ import { formatPrice } from "@/types";
 import { formatDateTime } from "@/lib/datetime";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { TrackOrderMap } from "@/components/customer/track-order";
+import { ReorderButton } from "@/components/customer/reorder-button";
 
 const TRACKABLE = ["assigned", "picked_up", "on_the_way"];
 
@@ -149,6 +150,10 @@ export default async function OrderDetailPage({
             </p>
           </>
         )}
+
+        <div className="mt-6 border-t border-neutral-200 pt-4">
+          <ReorderButton orderId={order.id} />
+        </div>
 
         <p className="mt-6 border-t border-neutral-200 pt-4 text-center text-sm text-neutral-500">
           Need help with this order? Email{" "}
