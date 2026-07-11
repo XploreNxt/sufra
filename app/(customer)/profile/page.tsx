@@ -82,7 +82,7 @@ export default async function ProfilePage() {
       <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
         <h2 className="font-bold text-stone-900">Help &amp; account</h2>
         <p className="mt-2 text-sm text-stone-600">
-          Need a hand with an order? Email{" "}
+          Need help with an order? Email{" "}
           <a
             href="mailto:support@sufra.com"
             className="font-semibold text-emerald-700 hover:underline"
