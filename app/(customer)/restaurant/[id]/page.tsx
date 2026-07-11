@@ -12,6 +12,7 @@ import { formatPrice } from "@/types";
 import type { DayKey } from "@/types";
 import { RestaurantMenu } from "@/components/restaurant-menu";
 import { FavoriteButton } from "@/components/customer/favorite-button";
+import { nextOpeningLabel } from "@/lib/hours";
 import {
   LOCATION_COOKIE,
   parseLocationCookie,
@@ -160,6 +161,16 @@ export default async function RestaurantPage({
           </div>
         </div>
       </div>
+
+      {!restaurant.is_open && (
+        <div className="s-fade-up mt-4 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-900 ring-1 ring-amber-200">
+          <p className="font-bold">Closed right now</p>
+          <p className="mt-0.5">
+            {nextOpeningLabel(restaurant.hours) ?? "Check back later"} — browse the
+            menu and order once it reopens.
+          </p>
+        </div>
+      )}
 
       {outOfRange && (
         <div className="s-fade-up mt-4 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-900 ring-1 ring-amber-200">

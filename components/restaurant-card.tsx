@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Restaurant } from "@/types";
 import { formatPrice } from "@/types";
 import { formatDistance, deliveryFeeForKm, DELIVERY_BASE_FEE } from "@/lib/geo";
+import { nextOpeningLabel } from "@/lib/hours";
 
 // Cover + emoji themed by cuisine so every card feels distinct.
 const CUISINE_THEMES: Array<[RegExp, string, string]> = [
@@ -83,6 +84,11 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
         <p className="mt-0.5 text-sm font-medium text-stone-500">
           {restaurant.cuisine_types.join(" · ")}
         </p>
+        {closed && (
+          <p className="mt-1 text-xs font-semibold text-amber-700">
+            🕒 {nextOpeningLabel(restaurant.hours) ?? "Currently closed"}
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] font-semibold">
           <span className="rounded-full bg-stone-100 px-2.5 py-1 text-stone-600">
             ⏱ ~{restaurant.default_prep_minutes} min
