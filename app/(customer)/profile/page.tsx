@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileEditor } from "@/components/customer/profile-editor";
 import { PreferencesEditor } from "@/components/customer/preferences-editor";
 import { ReferralCard, type RewardVoucher } from "@/components/customer/referral-card";
+import { PushToggle } from "@/components/customer/push-toggle";
 import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +76,7 @@ export default async function ProfilePage() {
         />
         <ProfileEditor profile={profile} />
         <PreferencesEditor profile={profile} />
+        <PushToggle />
       </div>
 
       <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">

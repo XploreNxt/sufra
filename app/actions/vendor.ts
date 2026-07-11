@@ -3,9 +3,17 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { pushToCustomer } from "@/lib/push/send";
 import type { OrderStatus } from "@/types";
 
 type ActionResult = { error?: string };
+
+// Customer-facing push copy for vendor-side transitions.
+const PUSH_MSG: Partial<Record<OrderStatus, { title: string; body: string }>> = {
+  preparing: { title: "👨‍🍳 In the kitchen", body: "Your order is being prepared." },
+  ready: { title: "✅ Order ready", body: "Your order is ready — a rider will pick it up soon." },
+  cancelled: { title: "Order cancelled", body: "Sorry — your order was cancelled." },
+};
 
 /**
  * Legal vendor-side transitions. Orders are auto-confirmed ('accepted') at
@@ -43,7 +51,7 @@ export async function updateOrderStatus(
   // RLS already scopes this to the vendor's own restaurant orders.
   const { data: order, error: readErr } = await supabase
     .from("orders")
-    .select("id, status")
+    .select("id, status, customer_id")
     .eq("id", orderId)
     .maybeSingle();
   if (readErr) return { error: readErr.message };
@@ -65,6 +73,15 @@ export async function updateOrderStatus(
     .eq("status", order.status); // guard against concurrent updates
 
   if (error) return { error: error.message };
+
+  const msg = PUSH_MSG[next];
+  if (msg) {
+    try {
+      await pushToCustomer(order.customer_id, { ...msg, url: `/orders/${orderId}` });
+    } catch {
+      /* push is best-effort */
+    }
+  }
   revalidatePath("/vendor");
   return {};
 }
