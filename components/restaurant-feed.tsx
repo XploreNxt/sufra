@@ -1,21 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Restaurant } from "@/types";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { romanUrduMatch } from "@/lib/search";
 
-export function RestaurantFeed({ restaurants }: { restaurants: Restaurant[] }) {
+export function RestaurantFeed({
+  restaurants,
+  favoriteCuisines = [],
+}: {
+  restaurants: Restaurant[];
+  favoriteCuisines?: string[];
+}) {
   const [query, setQuery] = useState("");
+  const [cuisine, setCuisine] = useState<string | null>(null);
+
+  // Build the chip list from cuisines actually present in the feed — most
+  // common first, with the customer's favourites pinned to the front.
+  const cuisines = useMemo(() => {
+    const count = new Map<string, number>();
+    for (const r of restaurants) {
+      for (const c of r.cuisine_types) {
+        const key = c.trim();
+        if (key) count.set(key, (count.get(key) ?? 0) + 1);
+      }
+    }
+    const fav = new Set(favoriteCuisines.map((c) => c.toLowerCase()));
+    return [...count.keys()].sort((a, b) => {
+      const fa = fav.has(a.toLowerCase());
+      const fb = fav.has(b.toLowerCase());
+      if (fa !== fb) return fa ? -1 : 1;
+      return count.get(b)! - count.get(a)! || a.localeCompare(b);
+    });
+  }, [restaurants, favoriteCuisines]);
 
   const q = query.trim();
-  const filtered = q
-    ? restaurants.filter(
-        (r) =>
-          romanUrduMatch(q, r.name) ||
-          r.cuisine_types.some((c) => romanUrduMatch(q, c))
-      )
-    : restaurants;
+  const filtered = restaurants.filter((r) => {
+    const matchesQuery =
+      !q ||
+      romanUrduMatch(q, r.name) ||
+      r.cuisine_types.some((c) => romanUrduMatch(q, c));
+    const matchesCuisine =
+      !cuisine ||
+      r.cuisine_types.some((c) => c.toLowerCase() === cuisine.toLowerCase());
+    return matchesQuery && matchesCuisine;
+  });
+
+  const chip = (active: boolean) =>
+    `shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all ${
+      active
+        ? "bg-emerald-600 text-white shadow-sm"
+        : "bg-white text-stone-600 ring-1 ring-stone-200 hover:bg-stone-100"
+    }`;
 
   return (
     <div>
@@ -49,19 +85,54 @@ export function RestaurantFeed({ restaurants }: { restaurants: Restaurant[] }) {
         </div>
       </section>
 
+      {/* Cuisine filter */}
+      {cuisines.length > 0 && (
+        <div className="s-fade mt-5 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            type="button"
+            onClick={() => setCuisine(null)}
+            className={chip(cuisine === null)}
+          >
+            All
+          </button>
+          {cuisines.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCuisine((cur) => (cur === c ? null : c))}
+              className={chip(cuisine === c)}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Feed */}
       {filtered.length === 0 ? (
         <div className="s-fade-up mt-14 text-center">
           <p className="text-5xl">🫥</p>
           <p className="mt-3 font-semibold text-stone-700">
-            Nothing matches “{query}”
+            {q
+              ? `Nothing matches “${q}”`
+              : cuisine
+                ? `No ${cuisine} kitchens deliver here yet`
+                : "No kitchens here yet"}
           </p>
-          <p className="mt-1 text-sm text-stone-500">
-            Try “biryani”, “bbq” or “burger”.
-          </p>
+          {(q || cuisine) && (
+            <button
+              onClick={() => {
+                setQuery("");
+                setCuisine(null);
+              }}
+              className="mt-3 rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100"
+            >
+              Show all
+            </button>
+          )}
         </div>
       ) : (
-        <div className="s-stagger mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="s-stagger mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => (
             <RestaurantCard key={r.id} restaurant={r} />
           ))}

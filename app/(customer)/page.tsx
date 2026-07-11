@@ -41,7 +41,10 @@ export default async function CustomerHome() {
           </p>
         </div>
       ) : (
-        <RestaurantFeed restaurants={restaurants} />
+        <RestaurantFeed
+          restaurants={restaurants}
+          favoriteCuisines={profile?.favorite_cuisines ?? []}
+        />
       )}
     </main>
   );
