@@ -5,12 +5,7 @@ import { useRouter } from "next/navigation";
 import { MapPicker } from "@/components/map-picker";
 import { DEFAULT_CENTER } from "@/lib/geo";
 import { setCustomerLocation } from "@/app/actions/location";
-
-interface SearchHit {
-  lat: string;
-  lon: string;
-  display_name: string;
-}
+import { searchPlaces, type PlaceHit } from "@/app/actions/geocode";
 
 async function reverseLabel(lat: number, lng: number): Promise<string> {
   try {
@@ -30,7 +25,7 @@ export function LocationGate() {
   const [pos, setPos] = useState(DEFAULT_CENTER);
   const [label, setLabel] = useState("");
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchHit[]>([]);
+  const [results, setResults] = useState<PlaceHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,28 +63,22 @@ export function LocationGate() {
     if (!q) return;
     setError(null);
     setSearching(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=pk&limit=5&q=${encodeURIComponent(
-          q
-        )}`,
-        { headers: { "Accept-Language": "en" } }
-      );
-      const hits = (await res.json()) as SearchHit[];
-      setResults(hits);
-      if (hits.length === 0) setError("No matches — try a nearby area or landmark.");
-    } catch {
-      setError("Search failed — check your connection or drag the pin.");
-    } finally {
-      setSearching(false);
+    const r = await searchPlaces(q);
+    setSearching(false);
+    if (r.error) {
+      setError("Search failed — try again or drag the pin.");
+      return;
     }
+    const hits = r.hits ?? [];
+    setResults(hits);
+    if (hits.length === 0) setError("No matches — try a nearby area or landmark.");
   }
 
-  function pickHit(h: SearchHit) {
-    setPos({ lat: Number(h.lat), lng: Number(h.lon) });
-    setLabel(h.display_name);
+  function pickHit(h: PlaceHit) {
+    setPos({ lat: h.lat, lng: h.lng });
+    setLabel(h.label);
     setResults([]);
-    setQuery(h.display_name.split(",")[0]);
+    setQuery(h.label.split(",")[0]);
   }
 
   function confirm() {
@@ -159,7 +148,7 @@ export function LocationGate() {
                   onClick={() => pickHit(h)}
                   className="block w-full px-3 py-2 text-left text-sm text-stone-700 hover:bg-emerald-50"
                 >
-                  {h.display_name}
+                  {h.label}
                 </button>
               </li>
             ))}

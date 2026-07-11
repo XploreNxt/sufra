@@ -1,17 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
-interface Hit {
-  lat: string;
-  lon: string;
-  display_name: string;
-}
+import { useState, useTransition } from "react";
+import { searchPlaces, type PlaceHit } from "@/app/actions/geocode";
 
 /**
- * Reusable place search (Nominatim / OpenStreetMap). On pick it hands back
- * the coordinates + a human-readable label; the parent decides what to do
- * (move a map pin, fill an address field, etc.).
+ * Reusable place search (Nominatim, proxied through a server action). On
+ * pick it hands back the coordinates + a human-readable label; the parent
+ * decides what to do (move a map pin, fill an address field, etc.).
  */
 export function LocationSearch({
   onPick,
@@ -21,37 +16,32 @@ export function LocationSearch({
   placeholder?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Hit[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<PlaceHit[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [searching, start] = useTransition();
 
-  async function search(e: React.FormEvent) {
+  function search(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
     setError(null);
-    setSearching(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=pk&limit=5&q=${encodeURIComponent(
-          q
-        )}`,
-        { headers: { "Accept-Language": "en" } }
-      );
-      const hits = (await res.json()) as Hit[];
+    start(async () => {
+      const r = await searchPlaces(q);
+      if (r.error) {
+        setError("Search failed — try again.");
+        return;
+      }
+      const hits = r.hits ?? [];
       setResults(hits);
-      if (hits.length === 0) setError("No matches — try a nearby area or landmark.");
-    } catch {
-      setError("Search failed — check your connection.");
-    } finally {
-      setSearching(false);
-    }
+      if (hits.length === 0)
+        setError("No matches — try a nearby area or landmark.");
+    });
   }
 
-  function pick(h: Hit) {
-    onPick(Number(h.lat), Number(h.lon), h.display_name);
+  function pick(h: PlaceHit) {
+    onPick(h.lat, h.lng, h.label);
     setResults([]);
-    setQuery(h.display_name.split(",")[0]);
+    setQuery(h.label.split(",")[0]);
   }
 
   return (
@@ -81,7 +71,7 @@ export function LocationSearch({
                 onClick={() => pick(h)}
                 className="block w-full px-3 py-2 text-left text-sm text-stone-700 hover:bg-emerald-50"
               >
-                {h.display_name}
+                {h.label}
               </button>
             </li>
           ))}
