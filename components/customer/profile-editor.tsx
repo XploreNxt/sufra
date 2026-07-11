@@ -64,13 +64,23 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="block">
             <span className={label}>Full name</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} className={field} />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              name="full_name"
+              autoComplete="name"
+              className={field}
+            />
           </label>
           <label className="block">
             <span className={label}>Phone</span>
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              type="tel"
+              inputMode="tel"
+              name="phone"
+              autoComplete="tel"
               placeholder="03XX XXXXXXX"
               className={field}
             />
@@ -111,6 +121,7 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
               type="password"
               value={pw}
               onChange={(e) => setPw(e.target.value)}
+              autoComplete="new-password"
               className={field}
             />
           </label>
@@ -120,6 +131,7 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
               type="password"
               value={pw2}
               onChange={(e) => setPw2(e.target.value)}
+              autoComplete="new-password"
               className={field}
             />
           </label>
