@@ -43,7 +43,6 @@ export interface AdminRestaurant {
   status: "pending" | "active" | "suspended";
   is_open: boolean;
   commission_rate: number;
-  delivery_fee: number;
   min_order: number;
   default_prep_minutes: number;
   created_at: string;
@@ -56,7 +55,7 @@ export async function getRestaurantsAdmin(): Promise<AdminRestaurant[]> {
     .from("restaurants")
     .select(
       `id, name, description, cuisine_types, phone, address_text, lat, lng,
-       status, is_open, commission_rate, delivery_fee, min_order,
+       status, is_open, commission_rate, min_order,
        default_prep_minutes, created_at,
        users!restaurants_owner_user_id_fkey(full_name, email)`
     )

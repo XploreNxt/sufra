@@ -6,7 +6,6 @@ import {
   updateRestaurantDetails,
 } from "@/app/actions/admin";
 import type { AdminRestaurant } from "@/lib/db/admin";
-import { formatPrice } from "@/types";
 
 const STATUS_STYLES: Record<AdminRestaurant["status"], string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -41,7 +40,6 @@ export function VendorsTable({ restaurants }: { restaurants: AdminRestaurant[] }
               <th className="px-4 py-2.5 font-medium">Restaurant</th>
               <th className="px-4 py-2.5 font-medium">Owner</th>
               <th className="px-4 py-2.5 text-right font-medium">Commission</th>
-              <th className="px-4 py-2.5 text-right font-medium">Delivery fee</th>
               <th className="px-4 py-2.5 text-right font-medium">Status</th>
               <th className="px-4 py-2.5 text-right font-medium">Actions</th>
             </tr>
@@ -60,9 +58,6 @@ export function VendorsTable({ restaurants }: { restaurants: AdminRestaurant[] }
                 </td>
                 <td className="px-4 py-2.5 text-right">
                   {Number(r.commission_rate)}%
-                </td>
-                <td className="px-4 py-2.5 text-right">
-                  {formatPrice(r.delivery_fee)}
                 </td>
                 <td className="px-4 py-2.5 text-right">
                   <span
@@ -140,7 +135,6 @@ function EditRestaurantModal({
   const [lat, setLat] = useState(r.lat != null ? String(r.lat) : "");
   const [lng, setLng] = useState(r.lng != null ? String(r.lng) : "");
   const [commission, setCommission] = useState(String(r.commission_rate));
-  const [deliveryFee, setDeliveryFee] = useState(String(r.delivery_fee));
   const [minOrder, setMinOrder] = useState(String(r.min_order));
   const [prep, setPrep] = useState(String(r.default_prep_minutes));
 
@@ -156,7 +150,6 @@ function EditRestaurantModal({
         lat: lat.trim() ? Number(lat) : null,
         lng: lng.trim() ? Number(lng) : null,
         commission_rate: Number(commission),
-        delivery_fee: Number(deliveryFee),
         min_order: Number(minOrder),
         default_prep_minutes: Number(prep),
       });
@@ -226,10 +219,6 @@ function EditRestaurantModal({
             <input value={commission} onChange={(e) => setCommission(e.target.value)} type="number" min="0" max="50" className={field} />
           </label>
           <label className="block">
-            <span className={label}>Delivery fee (Rs)</span>
-            <input value={deliveryFee} onChange={(e) => setDeliveryFee(e.target.value)} type="number" min="0" className={field} />
-          </label>
-          <label className="block">
             <span className={label}>Min order (Rs)</span>
             <input value={minOrder} onChange={(e) => setMinOrder(e.target.value)} type="number" min="0" className={field} />
           </label>
@@ -238,6 +227,10 @@ function EditRestaurantModal({
             <input value={prep} onChange={(e) => setPrep(e.target.value)} type="number" min="0" className={field} />
           </label>
         </div>
+
+        <p className="mt-3 text-xs text-stone-400">
+          Delivery fee is automatic — Rs 50 base + Rs 20 per km by distance.
+        </p>
 
         {error && (
           <p className="mt-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">

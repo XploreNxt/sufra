@@ -178,7 +178,6 @@ export interface RestaurantDetailsInput {
   lat: number | null;
   lng: number | null;
   commission_rate: number;
-  delivery_fee: number;
   min_order: number;
   default_prep_minutes: number;
 }
@@ -193,8 +192,8 @@ export async function updateRestaurantDetails(
   if (!input.name.trim()) return { error: "Name is required" };
   if (input.commission_rate < 0 || input.commission_rate > 50)
     return { error: "Commission must be between 0 and 50%" };
-  if (input.delivery_fee < 0 || input.min_order < 0)
-    return { error: "Fees cannot be negative" };
+  if (input.min_order < 0)
+    return { error: "Minimum order cannot be negative" };
   if (input.default_prep_minutes < 0)
     return { error: "Prep time cannot be negative" };
 
@@ -213,7 +212,6 @@ export async function updateRestaurantDetails(
       lat: input.lat,
       lng: input.lng,
       commission_rate: input.commission_rate,
-      delivery_fee: input.delivery_fee,
       min_order: input.min_order,
       default_prep_minutes: input.default_prep_minutes,
     })
