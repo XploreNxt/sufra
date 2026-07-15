@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { searchPlaces, type PlaceHit } from "@/app/actions/geocode";
 
 /**
- * Reusable place search (Nominatim, proxied through a server action). On
- * pick it hands back the coordinates + a human-readable label; the parent
- * decides what to do (move a map pin, fill an address field, etc.).
+ * Reusable place search (Nominatim, proxied through a server action) with
+ * live type-ahead suggestions. On pick it hands back the coordinates + a
+ * human-readable label; the parent decides what to do (move a map pin, fill
+ * an address field, etc.).
  */
 export function LocationSearch({
   onPick,
@@ -19,16 +20,16 @@ export function LocationSearch({
   const [results, setResults] = useState<PlaceHit[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searching, start] = useTransition();
+  // Skip the debounced fetch on the query change caused by picking a result.
+  const skipNext = useRef(false);
 
-  function search(e: React.FormEvent) {
-    e.preventDefault();
-    const q = query.trim();
-    if (!q) return;
+  function run(q: string) {
     setError(null);
     start(async () => {
       const r = await searchPlaces(q);
       if (r.error) {
         setError("Search failed — try again.");
+        setResults([]);
         return;
       }
       const hits = r.hits ?? [];
@@ -38,15 +39,40 @@ export function LocationSearch({
     });
   }
 
+  // Debounced suggestions as the user types.
+  useEffect(() => {
+    if (skipNext.current) {
+      skipNext.current = false;
+      return;
+    }
+    const q = query.trim();
+    if (q.length < 3) {
+      setResults([]);
+      setError(null);
+      return;
+    }
+    const t = setTimeout(() => run(q), 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (q) run(q);
+  }
+
   function pick(h: PlaceHit) {
+    skipNext.current = true;
     onPick(h.lat, h.lng, h.label);
     setResults([]);
+    setError(null);
     setQuery(h.label.split(",")[0]);
   }
 
   return (
-    <div>
-      <form onSubmit={search} className="flex gap-2">
+    <div className="relative">
+      <form onSubmit={submit} className="flex gap-2">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -63,7 +89,7 @@ export function LocationSearch({
       </form>
       {error && <p className="mt-2 text-xs text-stone-500">{error}</p>}
       {results.length > 0 && (
-        <ul className="mt-2 divide-y divide-stone-100 overflow-hidden rounded-xl ring-1 ring-stone-200">
+        <ul className="mt-2 max-h-60 divide-y divide-stone-100 overflow-y-auto rounded-xl bg-white ring-1 ring-stone-200 shadow-sm">
           {results.map((h, i) => (
             <li key={i}>
               <button

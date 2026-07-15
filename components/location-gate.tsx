@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MapPicker } from "@/components/map-picker";
+import { LocationSearch } from "@/components/location-search";
 import { DEFAULT_CENTER } from "@/lib/geo";
 import { setCustomerLocation } from "@/app/actions/location";
-import { searchPlaces, type PlaceHit } from "@/app/actions/geocode";
 
 async function reverseLabel(lat: number, lng: number): Promise<string> {
   try {
@@ -24,9 +24,6 @@ export function LocationGate() {
   const router = useRouter();
   const [pos, setPos] = useState(DEFAULT_CENTER);
   const [label, setLabel] = useState("");
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<PlaceHit[]>([]);
-  const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, start] = useTransition();
@@ -43,7 +40,6 @@ export function LocationGate() {
         setLocating(false);
         setPos({ lat: p.coords.latitude, lng: p.coords.longitude });
         setLabel("");
-        setResults([]);
       },
       (e) => {
         setLocating(false);
@@ -55,30 +51,6 @@ export function LocationGate() {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }
-
-  async function search(e: React.FormEvent) {
-    e.preventDefault();
-    const q = query.trim();
-    if (!q) return;
-    setError(null);
-    setSearching(true);
-    const r = await searchPlaces(q);
-    setSearching(false);
-    if (r.error) {
-      setError("Search failed — try again or drag the pin.");
-      return;
-    }
-    const hits = r.hits ?? [];
-    setResults(hits);
-    if (hits.length === 0) setError("No matches — try a nearby area or landmark.");
-  }
-
-  function pickHit(h: PlaceHit) {
-    setPos({ lat: h.lat, lng: h.lng });
-    setLabel(h.label);
-    setResults([]);
-    setQuery(h.label.split(",")[0]);
   }
 
   function confirm() {
@@ -124,36 +96,15 @@ export function LocationGate() {
           </button>
         </div>
 
-        <form onSubmit={search} className="mt-3 flex gap-2">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+        <div className="mt-3">
+          <LocationSearch
             placeholder="Search area, e.g. Gulshan-e-Iqbal, Karachi"
-            className="min-w-0 flex-1 rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            onPick={(lat, lng, lbl) => {
+              setPos({ lat, lng });
+              setLabel(lbl);
+            }}
           />
-          <button
-            type="submit"
-            disabled={searching}
-            className="rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-100 disabled:opacity-50"
-          >
-            {searching ? "…" : "Search"}
-          </button>
-        </form>
-
-        {results.length > 0 && (
-          <ul className="mt-2 divide-y divide-stone-100 overflow-hidden rounded-xl ring-1 ring-stone-200">
-            {results.map((h, i) => (
-              <li key={i}>
-                <button
-                  onClick={() => pickHit(h)}
-                  className="block w-full px-3 py-2 text-left text-sm text-stone-700 hover:bg-emerald-50"
-                >
-                  {h.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        </div>
 
         <MapPicker
           lat={pos.lat}
