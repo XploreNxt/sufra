@@ -1,63 +1,72 @@
-# Food Delivery Marketplace
+# Sufra — Food Delivery Marketplace
 
-A multi-vendor food delivery platform for the Pakistani market (web-only MVP).
+A multi-vendor food delivery platform for the Pakistani market (web MVP).
 Four sides in one Next.js app: **Customer**, **Vendor**, **Rider**, **Admin**.
-
-Built phase-by-phase from `food-delivery-build-blueprint.md`. Phases 0–7 and 9
-are complete; Phase 8 (JazzCash/Easypaisa) is pending provider credentials.
 
 ## Stack
 
-- **Next.js 16** (App Router, TypeScript) + **Tailwind 4**
-- **Supabase**: PostgreSQL, Auth, Realtime, RLS
-- Money paths (order creation, delivery completion, vouchers) run inside
-  Postgres functions — atomic, server-priced, RLS-safe
+- **Next.js 16** (App Router, TypeScript) + **Tailwind 4** — built with Webpack
+  (`next dev --webpack`), not Turbopack.
+- **Supabase**: PostgreSQL, Auth, Realtime, RLS, Storage.
+- Money paths (order pricing, delivery completion, vouchers, referral rewards)
+  run inside Postgres functions — atomic, server-priced, RLS-safe.
+- **Maps/geocoding**: Leaflet + OpenStreetMap tiles + Nominatim (all free, no
+  API key). Swap to a keyed provider for production — geocoding is isolated in
+  `app/actions/geocode.ts`, tiles in `components/map-picker.tsx`.
+
+## Features
+
+- **Location-first discovery** — customer sets a delivery location (locate-me /
+  search / draggable pin); the feed shows only restaurants whose delivery
+  radius covers them, sorted by distance.
+- **Distance-based delivery fee** — Rs 50 base + Rs 20/km, rider keeps 95%.
+- **Vendor**: approved location pin + delivery radius (≤25 km), self-serve
+  cuisines & spice levels, menu CRUD (admin-approved), promos, offers/bundles,
+  earnings, **check-in to open** with automatic close at closing time.
+- **Orders**: placed → vendor **accepts** to confirm → preparing → ready →
+  rider self-assign → delivered; live new-order bell + popup for vendors.
+- **Customer profile**: edit details, saved address book, favourites, one-tap
+  reorder, spice/cuisine preferences, email-OTP password change.
+- **Referrals** (voucher-based) and **web push** notifications.
+- Real-time updates throughout (Supabase Realtime + polling fallback).
 
 ## Running locally
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+cp .env.example .env.local   # then fill in real values
+npm run dev                  # http://localhost:3000
 ```
 
-`.env.local` needs the Supabase project URL + keys (see `.env.example`).
-Database schema lives in `supabase/migrations/` (run in order in the
-Supabase SQL editor).
+- Fill `.env.local` from `.env.example` (Supabase keys + VAPID keys).
+- Apply the schema: run every file in `supabase/migrations/` **in order** in the
+  Supabase SQL editor (0001 → 0019).
+- Portals are subdomain-scoped: `vendor.localhost:3000`, `rider.localhost:3000`,
+  `admin.localhost:3000` (plain `localhost` is the customer app).
 
-### Test accounts (password: `Test1234!`)
-
-| Email | Role | Landing |
-|---|---|---|
-| customer@test.com | customer | `/` browse → cart → checkout → track |
-| vendor@test.com | vendor | `/vendor` orders, menu, earnings |
-| rider@test.com | rider | `/rider` deliveries, COD ledger |
-| admin@test.com | admin | `/admin` approvals, monitor, settlement |
-
-### Seed scripts
+### Seed data (test accounts use password `Test1234!`)
 
 ```bash
-node scripts/seed-users.mjs        # the 4 test accounts
-node scripts/seed-restaurants.mjs  # 3 restaurants w/ menus + modifiers
+node scripts/seed-users.mjs        # customer/vendor/rider/admin @test.com
+node scripts/seed-restaurants.mjs  # restaurants + menus + modifiers
+node scripts/reassign-vendors.mjs  # one login per restaurant
 node scripts/seed-rider.mjs        # active rider profile
 ```
 
-## What works end to end
+| Email | Role |
+|---|---|
+| customer@test.com | customer |
+| cheezy@test.com / karachi@test.com / lahori@test.com | vendors |
+| rider@test.com | rider |
+| admin@test.com | admin |
 
-1. Customer browses (Roman-Urdu-tolerant search), builds a cart with item
-   options, applies a voucher, orders COD to an address with landmark + pin.
-2. Vendor accepts → preparing → ready (live queue, menu CRUD, open/close,
-   earnings minus commission).
-3. Rider goes online, self-assigns, navigates via Google Maps deep link,
-   collects cash — COD ledger tracks what they keep vs. owe.
-4. Admin approves vendors/riders, monitors orders live, reassigns/cancels,
-   sets commission, manages vouchers, settles rider cash.
-5. Everything updates in real time (Supabase Realtime + polling fallback);
-   customers see the rider moving on a map.
-6. Delivered orders can be rated — restaurant averages update automatically.
+`scripts/verify-*.mjs` are one-off end-to-end checks used during development
+(they read `.env.local`).
 
-## Deferred
+## Deferred / production notes
 
-- **Phase 8**: JazzCash / Easypaisa (needs merchant sandbox credentials)
-- Phone OTP login UI exists; enable the Supabase phone provider + SMS
-  provider to activate (email/password is the dev auth)
-- Push/SMS notifications, proof-of-delivery photos, surge pricing, referrals
+- **Payments**: COD only; JazzCash/Easypaisa need merchant credentials.
+- **Geocoding/tiles**: on free OSM services (rate-limited) — move to Google
+  Places / Mapbox for launch.
+- **Email/SMS**: password-change OTP needs real SMTP; test `@test.com` accounts
+  can't receive mail. Web push needs HTTPS + the VAPID keys set.
