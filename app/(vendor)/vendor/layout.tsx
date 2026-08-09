@@ -29,6 +29,12 @@ export default async function VendorLayout({
             Your account has no restaurant attached. Restaurant onboarding is
             handled by the admin for now.
           </p>
+          <p className="mt-3 text-xs text-neutral-400">
+            Signed in as {profile.email}
+          </p>
+          <div className="mt-5 flex justify-center">
+            <LogoutButton />
+          </div>
         </div>
       </main>
     );
