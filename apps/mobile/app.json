@@ -13,6 +13,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.surfa.customer",
       "adaptiveIcon": {
         "backgroundColor": "#14532D"
       }
