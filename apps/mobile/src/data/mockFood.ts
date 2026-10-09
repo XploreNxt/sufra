@@ -226,6 +226,11 @@ export const mockUser = {
   address: "Gulberg, Lahore",
 };
 
+export const mockRider = {
+  name: "Bilal Hussain",
+  vehicle: "Motorbike rider",
+};
+
 export const mockFavorites = [mockFood[0], mockFood[1], mockFood[4]];
 
 export const mockCategories: FoodCategory[] = [

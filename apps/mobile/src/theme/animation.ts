@@ -6,4 +6,6 @@ export const animation = {
   galleryIntervalMs: 3000,
   splashHoldMs: 1100,
   splashFadeMs: 350,
+  trackingTickMs: 1000,
+  deliveryDemoMs: 120000,
 } as const;

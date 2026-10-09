@@ -7,10 +7,11 @@ import { useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { MemoCartItemRow } from "@/components/cart/CartItemRow";
 import { useCart } from "@/context/CartContext";
+import { useOrder } from "@/context/OrderContext";
 import type { CartItem } from "@/context/CartContext";
 import type { CustomerTabParamList } from "@/navigation/types";
 import { formatPrice } from "@/types";
-import { colors, radii, spacing, typography } from "@/theme";
+import { animation, colors, radii, spacing, typography } from "@/theme";
 
 type PaymentMethodId = "cash" | "visa" | "mastercard" | "apple-pay";
 
@@ -57,9 +58,34 @@ export function CartScreen() {
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<BottomTabNavigationProp<CustomerTabParamList, "Cart">>();
-  const { items, itemCount, subtotal, addItem, decrementItem } = useCart();
+  const { items, itemCount, subtotal, addItem, decrementItem, clearCart } = useCart();
+  const { activeOrder, placeOrder } = useOrder();
   const [paymentId, setPaymentId] = useState<PaymentMethodId>("cash");
   const total = subtotal + DELIVERY_FEE;
+
+  const handlePlaceOrder = () => {
+    if (activeOrder && Date.now() - activeOrder.placedAt < animation.deliveryDemoMs) {
+      Alert.alert(
+        "You already have an order on the way",
+        "You can place another order once this one has been delivered.",
+        [
+          { text: "Stay here", style: "cancel" },
+          { text: "Track order", onPress: () => navigation.navigate("Orders") },
+        ],
+      );
+      return;
+    }
+
+    placeOrder({
+      items,
+      total,
+      paymentLabel:
+        paymentMethods.find((method) => method.id === paymentId)?.label ??
+        "Cash on delivery",
+    });
+    clearCart();
+    navigation.navigate("Orders");
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: CartItem }) => (
@@ -154,12 +180,7 @@ export function CartScreen() {
           <Pressable
             accessibilityLabel={`Place order for ${total} rupees`}
             accessibilityRole="button"
-            onPress={() =>
-              Alert.alert(
-                "Checkout is coming soon",
-                "Your items are safely in your cart. Ordering will be available in a future update.",
-              )
-            }
+            onPress={handlePlaceOrder}
             style={({ pressed }) => [
               styles.checkoutButton,
               pressed && styles.checkoutButtonPressed,

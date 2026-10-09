@@ -45,6 +45,25 @@ export interface FoodCategory {
   image_blurhash: string;
 }
 
+export interface OrderLine {
+  id: string;
+  name: string;
+  quantity: number;
+}
+
+export interface ActiveOrder {
+  id: string;
+  placedAt: number;
+  total: number;
+  paymentLabel: string;
+  itemCount: number;
+  lines: OrderLine[];
+  restaurantName: string;
+  address: string;
+  riderName: string;
+  riderVehicle: string;
+}
+
 export interface PromoSlide {
   id: string;
   eyebrow: string;

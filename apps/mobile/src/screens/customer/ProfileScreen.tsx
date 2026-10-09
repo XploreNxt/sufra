@@ -83,8 +83,8 @@ export function ProfileScreen({ navigation }: Props) {
               onPress={() => comingSoon("Payment methods")}
             />
             <ProfileRow
-              icon="receipt-outline"
-              label="My orders"
+              icon="bicycle-outline"
+              label="Track my order"
               onPress={() => navigation.navigate("Orders")}
             />
             <ProfileRow

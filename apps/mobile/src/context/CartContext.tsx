@@ -13,6 +13,7 @@ interface CartContextValue {
   subtotal: number;
   addItem: (food: FoodItem) => void;
   decrementItem: (foodId: string) => void;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -46,6 +47,8 @@ export function CartProvider({ children }: CartProviderProps) {
     );
   }, []);
 
+  const clearCart = useCallback(() => setItems([]), []);
+
   const value = useMemo(
     () => ({
       items,
@@ -53,8 +56,9 @@ export function CartProvider({ children }: CartProviderProps) {
       subtotal: items.reduce((total, item) => total + item.food.price * item.quantity, 0),
       addItem,
       decrementItem,
+      clearCart,
     }),
-    [addItem, decrementItem, items],
+    [addItem, clearCart, decrementItem, items],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
