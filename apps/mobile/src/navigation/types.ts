@@ -8,7 +8,15 @@ export type CustomerTabParamList = {
   Profile: undefined;
 };
 
+export type VendorTabParamList = {
+  Dashboard: undefined;
+  Menu: undefined;
+  Orders: undefined;
+  Earnings: undefined;
+};
+
 export type RootStackParamList = {
   CustomerTabs: NavigatorScreenParams<CustomerTabParamList> | undefined;
+  VendorTabs: NavigatorScreenParams<VendorTabParamList> | undefined;
   ProductDetails: { food: FoodItem };
 };

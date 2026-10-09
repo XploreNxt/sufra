@@ -5,6 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { SplashOverlay } from "@/components/common/SplashOverlay";
 import { CartProvider } from "@/context/CartContext";
 import { OrderProvider } from "@/context/OrderContext";
+import { VendorProvider } from "@/context/VendorContext";
 import { RootNavigator } from "@/navigation/RootNavigator";
 
 export default function App() {
@@ -13,7 +14,9 @@ export default function App() {
       <NavigationContainer>
         <CartProvider>
           <OrderProvider>
-            <RootNavigator />
+            <VendorProvider>
+              <RootNavigator />
+            </VendorProvider>
           </OrderProvider>
         </CartProvider>
       </NavigationContainer>
