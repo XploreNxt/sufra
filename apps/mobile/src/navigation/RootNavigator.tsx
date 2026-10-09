@@ -11,8 +11,8 @@ export function RootNavigator() {
     <Stack.Navigator
       initialRouteName="CustomerTabs"
       screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.primaryDark,
+        headerStyle: { backgroundColor: colors.primary },
+        headerTintColor: colors.white,
         headerTitleStyle: {
           fontSize: typography.bodyLarge,
           fontWeight: typography.weightSemibold,

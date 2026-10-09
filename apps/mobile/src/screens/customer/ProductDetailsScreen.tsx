@@ -52,7 +52,7 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" backgroundColor={colors.surface} />
+      <StatusBar style="light" backgroundColor={colors.primary} />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

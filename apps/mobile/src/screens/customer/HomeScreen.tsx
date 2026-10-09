@@ -155,7 +155,7 @@ export function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="light" backgroundColor={colors.primaryDark} />
+      <StatusBar style="light" backgroundColor={colors.primary} />
       <HomeHeader
         topInset={insets.top}
         search={search}

@@ -220,6 +220,12 @@ export const mockFood: FoodItem[] = [
   },
 ];
 
+export const mockUser = {
+  name: "Ahmed Khan",
+  email: "ahmed.khan@example.com",
+  address: "Gulberg, Lahore",
+};
+
 export const mockFavorites = [mockFood[0], mockFood[1], mockFood[4]];
 
 export const mockCategories: FoodCategory[] = [
