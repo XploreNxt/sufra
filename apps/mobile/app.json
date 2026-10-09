@@ -7,6 +7,8 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
       "backgroundColor": "#E9F3EC"
     },
     "ios": {
@@ -15,9 +17,19 @@
     "android": {
       "package": "com.surfa.customer",
       "adaptiveIcon": {
-        "backgroundColor": "#14532D"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       }
     },
-    "plugins": ["expo-asset", "expo-font"]
+    "plugins": [
+      "expo-asset",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/ionicons.ttf", "./assets/fonts/FontAwesome.ttf"]
+        }
+      ]
+    ],
+    "icon": "./assets/icon.png"
   }
 }
