@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
 import {
   Pressable,
@@ -14,66 +13,58 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { PriceTag } from "@/components/common/PriceTag";
 import { Rating } from "@/components/common/Rating";
+import { ImageGallery } from "@/components/product/ImageGallery";
 import { useCart } from "@/context/CartContext";
 import type { RootStackParamList } from "@/navigation/types";
-import { colors, radii, spacing, typography } from "@/theme";
+import { formatPrice } from "@/types";
+import { animation, colors, radii, spacing, typography } from "@/theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetails">;
 
-export function ProductDetailsScreen({ route }: Props) {
+export function ProductDetailsScreen({ navigation, route }: Props) {
   const { food } = route.params;
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { items, addItem, decrementItem } = useCart();
-  const [imageFailed, setImageFailed] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const quantity = items.find((item) => item.food.id === food.id)?.quantity ?? 0;
+  const images = useMemo(
+    () => [
+      ...new Set(
+        [food.image_url, ...(food.gallery_urls ?? [])].filter((uri): uri is string =>
+          Boolean(uri),
+        ),
+      ),
+    ],
+    [food.gallery_urls, food.image_url],
+  );
+  const heroHeight =
+    width >= spacing.detailWideScreenBreakpoint
+      ? spacing.detailHeroHeightLarge
+      : spacing.detailHeroHeight;
+
+  useEffect(() => {
+    if (!justAdded) return;
+
+    const timeout = setTimeout(() => setJustAdded(false), animation.toastDurationMs);
+    return () => clearTimeout(timeout);
+  }, [justAdded, quantity]);
 
   return (
     <View style={styles.screen}>
       <StatusBar style="dark" backgroundColor={colors.surface} />
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: spacing.xl }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          accessibilityLabel={`${food.name} food photo`}
-          style={[
-            styles.hero,
-            {
-              height:
-                width >= spacing.cardWidthMax * 1.5
-                  ? spacing.detailHeroHeightLarge
-                  : spacing.detailHeroHeight,
-            },
-          ]}
-        >
-          {!imageFailed && food.image_url ? (
-            <Image
-              cachePolicy="memory-disk"
-              contentFit="cover"
-              placeholder={{ blurhash: food.image_blurhash }}
-              source={{ uri: food.image_url }}
-              style={StyleSheet.absoluteFill}
-              transition={300}
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <View style={styles.imageFallback}>
-              <Ionicons
-                name="restaurant-outline"
-                size={spacing.iconXLarge}
-                color={colors.primary}
-              />
-              <Text style={styles.imageFallbackText}>Photo temporarily unavailable</Text>
-            </View>
-          )}
-          <View style={styles.imageShade} />
-          <View style={styles.photoBadge}>
-            <Ionicons name="flame" size={spacing.iconSmall} color={colors.accent} />
-            <Text style={styles.photoBadgeText}>CUSTOMER FAVORITE</Text>
-          </View>
-        </View>
+        <ImageGallery
+          key={food.id}
+          blurhash={food.image_blurhash}
+          height={heroHeight}
+          images={images}
+          name={food.name}
+          width={width}
+        />
 
         <View style={styles.content}>
           <View style={styles.restaurantRow}>
@@ -97,6 +88,9 @@ export function ProductDetailsScreen({ route }: Props) {
           <View style={styles.priceBlock}>
             <PriceTag price={food.price} />
             <Text style={styles.priceNote}>Inclusive of all taxes</Text>
+            {food.is_available ? null : (
+              <Text style={styles.unavailableNote}>Currently unavailable</Text>
+            )}
           </View>
 
           <View style={styles.divider} />
@@ -148,20 +142,28 @@ export function ProductDetailsScreen({ route }: Props) {
         <Pressable
           accessibilityLabel={`Add ${food.name} to cart for ${food.price} rupees`}
           accessibilityRole="button"
+          accessibilityState={{ disabled: !food.is_available }}
+          disabled={!food.is_available}
           onPress={() => {
             addItem(food);
-            setJustAdded(true);
+            navigation.popTo("CustomerTabs", { screen: "Cart" });
           }}
-          style={styles.addButton}
+          style={({ pressed }) => [
+            styles.addButton,
+            pressed && styles.addButtonPressed,
+            !food.is_available && styles.addButtonDisabled,
+          ]}
         >
           <Ionicons name="bag-add-outline" size={spacing.icon} color={colors.white} />
           <Text style={styles.addButtonText}>
-            {quantity > 0 ? "Add another" : "Add to cart"}
+            {!food.is_available
+              ? "Unavailable"
+              : quantity > 0
+                ? "Add another"
+                : "Add to cart"}
           </Text>
           <View style={styles.buttonDivider} />
-          <Text style={styles.addButtonPrice}>
-            Rs {food.price.toLocaleString("en-PK")}
-          </Text>
+          <Text style={styles.addButtonPrice}>{formatPrice(food.price)}</Text>
         </Pressable>
         {justAdded ? (
           <Text accessibilityRole="alert" style={styles.addedMessage}>
@@ -195,45 +197,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: spacing.xl,
   },
-  hero: {
-    position: "relative",
-    overflow: "hidden",
-    backgroundColor: colors.primaryLight,
-  },
-  imageFallback: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.primaryLight,
-  },
-  imageFallbackText: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-  },
-  imageShade: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.overlay,
-    opacity: spacing.imageOverlayOpacity,
-  },
-  photoBadge: {
-    position: "absolute",
-    left: spacing.pageHorizontal,
-    bottom: spacing.lg,
-    minHeight: spacing.touchTarget,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.pill,
-    backgroundColor: colors.white,
-  },
-  photoBadgeText: {
-    color: colors.primaryDark,
-    fontSize: typography.caption,
-    fontWeight: typography.weightBold,
-    letterSpacing: spacing.xs,
-  },
   content: {
     gap: spacing.detailSectionGap,
     paddingHorizontal: spacing.pageHorizontal,
@@ -260,7 +223,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: typography.caption,
     fontWeight: typography.weightSemibold,
-    letterSpacing: spacing.xs,
+    letterSpacing: 1,
   },
   restaurantName: {
     color: colors.text,
@@ -293,6 +256,11 @@ const styles = StyleSheet.create({
   priceNote: {
     color: colors.textSecondary,
     fontSize: typography.caption,
+  },
+  unavailableNote: {
+    color: colors.danger,
+    fontSize: typography.small,
+    fontWeight: typography.weightSemibold,
   },
   divider: {
     height: spacing.borderHairline,
@@ -376,6 +344,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
     backgroundColor: colors.primary,
+  },
+  addButtonPressed: {
+    backgroundColor: colors.primaryDark,
+  },
+  addButtonDisabled: {
+    backgroundColor: colors.muted,
   },
   addButtonText: {
     color: colors.white,

@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SearchBar } from "@/components/common/SearchBar";
+import { SurfaLogo } from "@/components/common/SurfaLogo";
 import { colors, radii, spacing, typography } from "@/theme";
 
 interface HomeHeaderProps {
@@ -22,7 +23,9 @@ export function HomeHeader({
     <View style={[styles.container, { paddingTop: topInset + spacing.headerTopPadding }]}>
       <View style={styles.topRow}>
         <View style={styles.brandBlock}>
-          <Text style={styles.brand}>Surfa</Text>
+          <View style={styles.brand}>
+            <SurfaLogo />
+          </View>
           <Text style={styles.locationLabel}>DELIVERING TO</Text>
           <View style={styles.location}>
             <Ionicons name="location" size={spacing.iconSmall} color={colors.accent} />
@@ -73,10 +76,12 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
   },
   brand: {
-    color: colors.white,
-    fontSize: typography.title,
-    lineHeight: typography.lineTitle,
-    fontWeight: typography.weightHeavy,
+    alignSelf: "flex-start",
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.pill,
+    backgroundColor: colors.white,
   },
   locationLabel: {
     color: colors.primaryLight,

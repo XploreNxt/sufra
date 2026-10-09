@@ -12,6 +12,8 @@ const colors = {
   border: "#E9E7E2",
   star: "#F5A623",
   danger: "#B42318",
+  visa: "#1A1F71",
+  mastercard: "#EB001B",
   overlay: "rgba(20, 36, 25, 0.38)",
   promoGradient: "rgba(20, 83, 45, 0.84)",
   white: "#FFFFFF",

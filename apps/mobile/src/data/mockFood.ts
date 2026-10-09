@@ -12,6 +12,10 @@ export const mockFood: FoodItem[] = [
     price: 890,
     image_url:
       "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 1,
     status: "approved",
@@ -32,6 +36,10 @@ export const mockFood: FoodItem[] = [
     price: 1150,
     image_url:
       "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1553979459-d2229ba7433b?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 2,
     status: "approved",
@@ -52,6 +60,10 @@ export const mockFood: FoodItem[] = [
     price: 1390,
     image_url:
       "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 3,
     status: "approved",
@@ -72,6 +84,10 @@ export const mockFood: FoodItem[] = [
     price: 970,
     image_url:
       "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 4,
     status: "approved",
@@ -92,6 +108,10 @@ export const mockFood: FoodItem[] = [
     price: 620,
     image_url:
       "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 5,
     status: "approved",
@@ -112,6 +132,9 @@ export const mockFood: FoodItem[] = [
     price: 1280,
     image_url:
       "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 6,
     status: "approved",
@@ -132,6 +155,9 @@ export const mockFood: FoodItem[] = [
     price: 1340,
     image_url:
       "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 7,
     status: "approved",
@@ -153,6 +179,10 @@ export const mockFood: FoodItem[] = [
     price: 780,
     image_url:
       "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 8,
     status: "approved",
@@ -173,6 +203,10 @@ export const mockFood: FoodItem[] = [
     price: 390,
     image_url:
       "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=900&q=85",
+    gallery_urls: [
+      "https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?auto=format&fit=crop&w=900&q=85",
+    ],
     is_available: true,
     sort_order: 9,
     status: "approved",

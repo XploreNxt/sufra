@@ -25,6 +25,7 @@ export interface FoodItem {
   description: string | null;
   price: number;
   image_url: string | null;
+  gallery_urls?: string[];
   is_available: boolean;
   sort_order: number;
   status: MenuItemStatus;

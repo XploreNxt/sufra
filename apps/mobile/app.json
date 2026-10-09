@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
+    "splash": {
+      "backgroundColor": "#E9F3EC"
+    },
     "ios": {
       "supportsTablet": true
     },
