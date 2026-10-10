@@ -176,10 +176,6 @@ export function PromoBanner({ slides, onPress }: PromoBannerProps) {
         })}
       />
       <View style={styles.pagination}>
-        <Text style={styles.paginationLabel}>
-          {String(activeIndex + 1).padStart(2, "0")} /{" "}
-          {String(slides.length).padStart(2, "0")}
-        </Text>
         <View style={styles.dots}>
           {slides.map((slide, index) => (
             <Pressable
@@ -194,11 +190,6 @@ export function PromoBanner({ slides, onPress }: PromoBannerProps) {
             </Pressable>
           ))}
         </View>
-        <Ionicons
-          name="swap-horizontal"
-          size={spacing.icon}
-          color={colors.textSecondary}
-        />
       </View>
     </View>
   );
@@ -271,14 +262,8 @@ const styles = StyleSheet.create({
   pagination: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
     paddingHorizontal: spacing.xs,
-  },
-  paginationLabel: {
-    minWidth: spacing.cartQtyMinWidth * 2,
-    color: colors.textSecondary,
-    fontSize: typography.caption,
-    fontWeight: typography.weightSemibold,
   },
   dots: {
     flexDirection: "row",
