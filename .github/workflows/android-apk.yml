@@ -29,8 +29,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # A manual run builds the app that was picked; a push builds vendor and rider.
-        app: ${{ fromJSON(inputs.app && format('["{0}"]', inputs.app) || '["vendor","rider"]') }}
+        # A manual run builds the app that was picked; a push builds all three.
+        app: ${{ fromJSON(inputs.app && format('["{0}"]', inputs.app) || '["customer","vendor","rider"]') }}
     # app.config.js and src/config/app.ts both read this to pick the app.
     env:
       EXPO_PUBLIC_APP_MODE: ${{ matrix.app }}
