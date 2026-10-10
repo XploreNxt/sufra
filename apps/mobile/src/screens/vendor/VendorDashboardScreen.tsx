@@ -37,7 +37,8 @@ export function VendorDashboardScreen() {
         <Text style={styles.sectionTitle}>Stock alerts</Text>
         {outOfStock.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>Nothing is out of stock. 🎉</Text>
+            <Ionicons name="checkmark-circle" size={spacing.iconLarge} color={colors.primary} />
+            <Text style={styles.emptyText}>Nothing is out of stock.</Text>
           </View>
         ) : (
           outOfStock.map((item) => (
@@ -133,6 +134,10 @@ const styles = StyleSheet.create({
   },
   restockText: { color: colors.white, fontSize: typography.small, fontWeight: typography.weightBold },
   emptyCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: spacing.lg,

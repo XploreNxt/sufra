@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
 import { VendorHeader } from "@/components/vendor/VendorHeader";
 import { CATEGORIES } from "@/data/mockVendor";
@@ -39,6 +40,11 @@ export function VendorMenuScreen() {
     setBulk(false);
   }
 
+  function selectAllVisible() {
+    const allSelected = visible.every((m) => selected.has(m.id));
+    setSelected(allSelected ? new Set() : new Set(visible.map((m) => m.id)));
+  }
+
   function confirmDelete(item: VendorMenuItem) {
     Alert.alert("Delete item", `Remove "${item.name}" from the menu?`, [
       { text: "Cancel", style: "cancel" },
@@ -49,18 +55,20 @@ export function VendorMenuScreen() {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <VendorHeader title="Menu Management" subtitle={`${menu.length} items · ${CATEGORIES.length} categories`} />
+      <VendorHeader title="Menu Management" subtitle={`${menu.length} items in ${CATEGORIES.length} categories`} />
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll} contentContainerStyle={styles.chips}>
-        {[ALL, ...CATEGORIES].map((c) => {
-          const active = c === category;
-          return (
-            <Pressable key={c} onPress={() => setCategory(c)} style={[styles.chip, active && styles.chipActive]}>
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>{c}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.chipsBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+          {[ALL, ...CATEGORIES].map((c) => {
+            const active = c === category;
+            return (
+              <Pressable key={c} onPress={() => setCategory(c)} style={[styles.chip, active && styles.chipActive]}>
+                <Text style={[styles.chipText, active && styles.chipTextActive]}>{c}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
 
       <View style={styles.toolbar}>
         <Pressable
@@ -71,7 +79,7 @@ export function VendorMenuScreen() {
           style={[styles.toolBtn, bulk && styles.toolBtnActive]}
         >
           <Text style={[styles.toolBtnText, bulk && styles.toolBtnTextActive]}>
-            {bulk ? "Done" : "Bulk edit"}
+            {bulk ? "Cancel" : "Bulk edit"}
           </Text>
         </Pressable>
         <Pressable onPress={() => setEditing("new")} style={styles.addBtn}>
@@ -79,6 +87,19 @@ export function VendorMenuScreen() {
           <Text style={styles.addBtnText}>Add item</Text>
         </Pressable>
       </View>
+
+      {bulk ? (
+        <View style={styles.bulkHint}>
+          <Text style={styles.bulkHintText}>
+            Tap items to select them, then choose Mark in stock or Mark out of stock below.
+          </Text>
+          <Pressable onPress={selectAllVisible} hitSlop={8}>
+            <Text style={styles.selectAllText}>
+              {visible.length > 0 && visible.every((m) => selected.has(m.id)) ? "Clear all" : "Select all"}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {visible.map((item) => {
@@ -101,9 +122,14 @@ export function VendorMenuScreen() {
                   color={checked ? colors.accent : colors.muted}
                 />
               ) : null}
-              <View style={styles.thumb}>
-                <Text style={styles.thumbEmoji}>{item.emoji}</Text>
-              </View>
+              {item.image_url ? (
+                <Image source={{ uri: item.image_url }} style={styles.thumb} contentFit="cover" accessibilityLabel={item.name} />
+              ) : (
+                <View style={[styles.thumb, styles.thumbEmpty]}>
+                  <Ionicons name="image-outline" size={spacing.iconLarge} color={colors.muted} />
+                  <Text style={styles.thumbEmptyText}>No photo</Text>
+                </View>
+              )}
               <View style={{ flex: 1 }}>
                 <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
                 <Text style={styles.price}>
@@ -148,13 +174,15 @@ export function VendorMenuScreen() {
 
       {bulk && selected.size > 0 ? (
         <View style={styles.bulkBar}>
-          <Text style={styles.bulkCount}>{selected.size} selected</Text>
+          <Text style={styles.bulkCount}>
+            {selected.size} {selected.size === 1 ? "item" : "items"} selected
+          </Text>
           <View style={{ flexDirection: "row", gap: spacing.sm }}>
             <Pressable onPress={() => bulkSet(true)} style={[styles.bulkBtn, { backgroundColor: colors.primary }]}>
-              <Text style={styles.bulkBtnText}>In stock</Text>
+              <Text style={styles.bulkBtnText}>Mark in stock</Text>
             </Pressable>
             <Pressable onPress={() => bulkSet(false)} style={[styles.bulkBtn, { backgroundColor: colors.accent }]}>
-              <Text style={styles.bulkBtnText}>Out of stock</Text>
+              <Text style={styles.bulkBtnText}>Mark out of stock</Text>
             </Pressable>
           </View>
         </View>
@@ -231,7 +259,7 @@ function ItemEditor({
           </Pressable>
           <Pressable
             disabled={!canSave}
-            onPress={() => onSave({ name: name.trim(), price: Number(price), description, category: cat, emoji: initial?.emoji ?? "🍽️" })}
+            onPress={() => onSave({ name: name.trim(), price: Number(price), description, category: cat, image_url: initial?.image_url ?? null })}
             style={[styles.saveBtn, !canSave && { opacity: 0.5 }]}
           >
             <Text style={styles.saveText}>Save</Text>
@@ -244,9 +272,14 @@ function ItemEditor({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  chipsScroll: { flexGrow: 0, marginTop: spacing.md },
+  // Fixed-height bar that never shrinks: a bare ScrollView here gets squashed
+  // by the long item list below it, which clips the chip labels.
+  chipsBar: { height: spacing.touchTarget, flexShrink: 0, marginTop: spacing.md },
+  // Horizontal list: no wrapping, so chips keep their full width and scroll sideways.
+  chipRow: { paddingHorizontal: spacing.pageHorizontal, gap: spacing.sm, flexDirection: "row", alignItems: "center" },
   chips: { paddingHorizontal: spacing.pageHorizontal, gap: spacing.sm, flexDirection: "row", flexWrap: "wrap" },
   chip: {
+    flexShrink: 0,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: radii.pill,
@@ -299,14 +332,33 @@ const styles = StyleSheet.create({
   cardChecked: { borderColor: colors.accent, borderWidth: 2 },
   cardMuted: { opacity: 0.7 },
   thumb: {
-    width: 64,
-    height: 64,
+    width: 80,
+    height: 80,
     borderRadius: radii.md,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.background,
+  },
+  thumbEmpty: {
     alignItems: "center",
     justifyContent: "center",
+    gap: spacing.xxs,
+    borderWidth: spacing.borderHairline,
+    borderStyle: "dashed",
+    borderColor: colors.border,
   },
-  thumbEmoji: { fontSize: 28 },
+  thumbEmptyText: { color: colors.muted, fontSize: typography.caption, fontWeight: typography.weightSemibold },
+  bulkHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
+    marginHorizontal: spacing.pageHorizontal,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.primaryLight,
+  },
+  bulkHintText: { flex: 1, color: colors.primaryDark, fontSize: typography.small },
+  selectAllText: { color: colors.primary, fontSize: typography.small, fontWeight: typography.weightBold },
   name: { color: colors.text, fontSize: typography.body, fontWeight: typography.weightBold },
   price: { color: colors.primary, fontSize: typography.small, fontWeight: typography.weightSemibold, marginTop: 2 },
   category: { color: colors.textSecondary, fontWeight: typography.weightRegular },

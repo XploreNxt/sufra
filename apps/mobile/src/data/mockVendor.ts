@@ -4,16 +4,27 @@ export const RESTAURANT_NAME = "Surfa Kitchen";
 /** Platform commission on food sales (matches the web vendor portal default). */
 export const COMMISSION_RATE = 15;
 
-export const CATEGORIES = ["Thalis", "Starters", "Main Course", "Drinks", "Desserts"];
+export const CATEGORIES = ["Burgers", "Pizza", "Main Course", "Starters", "Drinks", "Desserts"];
+
+// Photos reuse the Unsplash images the customer app already ships with.
+// Items without a matching photo show a "No photo" tile until one is added.
+const BURGER_PHOTO =
+  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=85";
+const PIZZA_PHOTO =
+  "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85";
+const MANGO_PHOTO =
+  "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=900&q=85";
 
 export const MOCK_MENU: VendorMenuItem[] = [
-  { id: "m1", name: "Chicken Karahi", description: "Half kg, served with naan", price: 1450, category: "Main Course", emoji: "🍛", isAvailable: true },
-  { id: "m2", name: "Beef Biryani", description: "Dum style, raita included", price: 680, category: "Main Course", emoji: "🍚", isAvailable: true },
-  { id: "m3", name: "Chicken Tikka", description: "Six pieces, mint chutney", price: 520, category: "Starters", emoji: "🍢", isAvailable: false },
-  { id: "m4", name: "Veg Samosa", description: "Two pieces, tamarind chutney", price: 180, category: "Starters", emoji: "🥟", isAvailable: true },
-  { id: "m5", name: "Special Thali", description: "Dal, sabzi, rice and roti", price: 850, category: "Thalis", emoji: "🍱", isAvailable: true },
-  { id: "m6", name: "Mango Lassi", description: "Chilled, 350 ml", price: 250, category: "Drinks", emoji: "🥭", isAvailable: false },
-  { id: "m7", name: "Gulab Jamun", description: "Two pieces", price: 200, category: "Desserts", emoji: "🍮", isAvailable: true },
+  { id: "m1", name: "Classic Smash Burger", description: "Double beef patty, cheddar, house sauce", price: 1150, category: "Burgers", image_url: BURGER_PHOTO, isAvailable: true },
+  { id: "m2", name: "Wood-Fired Margherita", description: "Mozzarella, basil, ripe tomatoes", price: 1390, category: "Pizza", image_url: PIZZA_PHOTO, isAvailable: true },
+  { id: "m3", name: "Chicken Karahi", description: "Half kg, served with naan", price: 1450, category: "Main Course", image_url: null, isAvailable: true },
+  { id: "m4", name: "Beef Biryani", description: "Dum style, raita included", price: 680, category: "Main Course", image_url: null, isAvailable: true },
+  { id: "m5", name: "Special Thali", description: "Dal, sabzi, rice and roti", price: 850, category: "Main Course", image_url: null, isAvailable: true },
+  { id: "m6", name: "Chicken Tikka", description: "Six pieces, mint chutney", price: 520, category: "Starters", image_url: null, isAvailable: false },
+  { id: "m7", name: "Veg Samosa", description: "Two pieces, tamarind chutney", price: 180, category: "Starters", image_url: null, isAvailable: true },
+  { id: "m8", name: "Mango Lassi", description: "Chilled, 350 ml", price: 250, category: "Drinks", image_url: MANGO_PHOTO, isAvailable: false },
+  { id: "m9", name: "Gulab Jamun", description: "Two pieces", price: 200, category: "Desserts", image_url: null, isAvailable: true },
 ];
 
 export const MOCK_ORDERS: VendorOrder[] = [

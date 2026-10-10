@@ -11,7 +11,7 @@ export interface VendorMenuItem {
   description: string;
   price: number;
   category: string;
-  emoji: string;
+  image_url: string | null;
   isAvailable: boolean;
 }
 

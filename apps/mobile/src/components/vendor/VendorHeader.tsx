@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RESTAURANT_NAME } from "@/data/mockVendor";
@@ -10,7 +11,7 @@ export function VendorHeader({ title, subtitle }: { title: string; subtitle?: st
     <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
       <View style={styles.brandRow}>
         <View style={styles.logo}>
-          <Text style={styles.logoEmoji}>🍽️</Text>
+          <Ionicons name="restaurant" size={spacing.iconSmall} color={colors.primary} />
         </View>
         <View style={styles.restaurantChip}>
           <Text style={styles.restaurantText} numberOfLines={1}>
@@ -44,7 +45,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  logoEmoji: { fontSize: 16 },
   restaurantChip: {
     flex: 1,
     backgroundColor: "rgba(255,255,255,0.14)",
