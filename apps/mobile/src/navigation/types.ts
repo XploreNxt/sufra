@@ -15,8 +15,16 @@ export type VendorTabParamList = {
   Earnings: undefined;
 };
 
+export type RiderTabParamList = {
+  Jobs: undefined;
+  Delivery: undefined;
+  Earnings: undefined;
+  Performance: undefined;
+};
+
 export type RootStackParamList = {
   CustomerTabs: NavigatorScreenParams<CustomerTabParamList> | undefined;
   VendorTabs: NavigatorScreenParams<VendorTabParamList> | undefined;
+  RiderTabs: NavigatorScreenParams<RiderTabParamList> | undefined;
   ProductDetails: { food: FoodItem };
 };

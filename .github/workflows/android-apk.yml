@@ -6,8 +6,8 @@ on:
       app:
         description: Which app to build
         type: choice
-        options: [vendor, customer]
-        default: vendor
+        options: [rider, vendor, customer]
+        default: rider
   push:
     branches: [master]
     paths:
@@ -21,15 +21,19 @@ concurrency:
 permissions:
   contents: read
 
-# Pushes build the vendor app. app.config.js and src/config/app.ts both read this.
-env:
-  EXPO_PUBLIC_APP_MODE: ${{ inputs.app || 'vendor' }}
-
 jobs:
   build:
-    name: Build release APK
+    name: Build ${{ matrix.app }} APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # A manual run builds the app that was picked; a push builds vendor and rider.
+        app: ${{ fromJSON(inputs.app && format('["{0}"]', inputs.app) || '["vendor","rider"]') }}
+    # app.config.js and src/config/app.ts both read this to pick the app.
+    env:
+      EXPO_PUBLIC_APP_MODE: ${{ matrix.app }}
     defaults:
       run:
         working-directory: apps/mobile
@@ -70,7 +74,7 @@ jobs:
       - name: Upload the APK
         uses: actions/upload-artifact@v4
         with:
-          name: surfa-${{ env.EXPO_PUBLIC_APP_MODE }}-apk
+          name: surfa-${{ matrix.app }}-apk
           path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14

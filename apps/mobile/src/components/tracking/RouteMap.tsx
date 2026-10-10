@@ -8,6 +8,8 @@ interface RouteMapProps {
   height: number;
   /** How far along the route the rider is, from 0 (restaurant) to 1 (customer). */
   progress: number;
+  /** Screen-reader description. Defaults to the customer's tracking wording. */
+  label?: string;
 }
 
 interface Point {
@@ -48,7 +50,12 @@ function pointAt(points: Point[], progress: number): Point {
   return points[points.length - 1];
 }
 
-function RouteMap({ width, height, progress }: RouteMapProps) {
+function RouteMap({
+  width,
+  height,
+  progress,
+  label = "Map showing your rider's route from the restaurant to you",
+}: RouteMapProps) {
   const points = useMemo(
     () => routeCorners.map((corner) => ({ x: corner.x * width, y: corner.y * height })),
     [height, width],
@@ -83,7 +90,7 @@ function RouteMap({ width, height, progress }: RouteMapProps) {
 
   return (
     <View
-      accessibilityLabel="Map showing your rider's route from the restaurant to you"
+      accessibilityLabel={label}
       accessibilityRole="image"
       style={[styles.map, { width, height }]}
     >
